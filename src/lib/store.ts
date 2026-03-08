@@ -8,6 +8,7 @@ export interface Movie {
   addedBy: string;
   rating?: string;
   watchUrl?: string;
+  embedUrl?: string;
 }
 
 export interface Ticket {
