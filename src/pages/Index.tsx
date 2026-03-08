@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import vintageTv from "@/assets/vintage-tv.png";
+import heroCinema from "@/assets/hero-cinema.jpg";
 
 function getMoviePoster(movie: Movie): string {
   return movie.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop";
@@ -85,7 +85,15 @@ export default function Index() {
     <div className="min-h-screen bg-polka">
       {/* Hero */}
       <section className="relative py-16 sm:py-28 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gingham opacity-30" />
+        <div className="absolute inset-0">
+          <img
+            src={heroCinema}
+            alt="Cozy vintage cinema interior"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
+          <div className="absolute inset-0 bg-gingham opacity-10" />
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -93,18 +101,6 @@ export default function Index() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative z-10 text-center px-4 max-w-3xl"
         >
-          <motion.div
-            initial={{ scale: 0, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="mb-6"
-          >
-            <img
-              src={vintageTv}
-              alt="Vintage TV"
-              className="w-40 sm:w-56 mx-auto drop-shadow-2xl"
-            />
-          </motion.div>
 
           <motion.div
             initial={{ scale: 0 }}
