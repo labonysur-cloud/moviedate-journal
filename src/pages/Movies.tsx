@@ -41,8 +41,9 @@ export default function Movies() {
   const { hasTicketForMovie } = useTickets();
   const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "" });
+  const [form, setForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" });
   const [autofilling, setAutofilling] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
   const [showRecs, setShowRecs] = useState(false);
   const [recs, setRecs] = useState<Recommendation[]>([]);
   const [recsLoading, setRecsLoading] = useState(false);
@@ -50,12 +51,18 @@ export default function Movies() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleAutoFill = async () => {
-    if (!form.title) return;
+  const isUrl = (str: string) => /^https?:\/\//i.test(str.trim()) || /^www\./i.test(str.trim());
+
+  const handleSmartAutoFill = async () => {
+    const input = linkInput.trim();
+    if (!input) return;
     setAutofilling(true);
     try {
+      const isLink = isUrl(input);
       const { data, error } = await supabase.functions.invoke("movie-ai", {
-        body: { action: "autofill", title: form.title },
+        body: isLink
+          ? { action: "autofill_from_url", url: input, title: form.title }
+          : { action: "autofill", title: input },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -67,10 +74,17 @@ export default function Movies() {
         description: data.description || prev.description,
         rating: data.rating || prev.rating,
         poster: data.poster || prev.poster,
+        embedUrl: data.embed_url || (isLink ? input : prev.embedUrl),
+        totalSeasons: data.total_seasons ? String(data.total_seasons) : prev.totalSeasons,
       }));
-      toast({ title: "✨ Auto-filled!", description: `Found details for "${data.title || form.title}"` });
+      setShowForm(true);
+      toast({ title: "✨ Found it!", description: `Filled in details for "${data.title || input}"` });
     } catch (err: any) {
-      toast({ title: "Couldn't auto-fill", description: err.message || "Try entering details manually", variant: "destructive" });
+      toast({ title: "Couldn't identify", description: err.message || "Try entering details manually", variant: "destructive" });
+      if (!isUrl(input)) {
+        setForm((prev) => ({ ...prev, title: input }));
+      }
+      setShowForm(true);
     }
     setAutofilling(false);
   };
