@@ -9,6 +9,7 @@ import { useTickets } from "@/hooks/useTickets";
 import { useNavigate } from "react-router-dom";
 import { ClapperboardIcon } from "@/components/icons/CinemaIcons";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 function getMoviePoster(movie: Movie): string {
