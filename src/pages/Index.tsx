@@ -1,9 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Film, Ticket, BookHeart, Popcorn, Heart, Play, Star, Users } from "lucide-react";
+import { Film, Ticket, BookHeart, Popcorn, Heart, Play, Star, Users, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMovies, type Movie } from "@/hooks/useMovies";
 import { useTickets } from "@/hooks/useTickets";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 import heroCinema from "@/assets/hero-cinema.jpg";
 
 function getMoviePoster(movie: Movie): string {
