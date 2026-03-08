@@ -283,6 +283,7 @@ const EMOJI_LIST = [
                 {messages.map((msg) => {
                   const isMe = msg.user_id === user?.id;
                   const prof = profiles[msg.user_id];
+                  const gifMatch = msg.content.match(/^\[gif\](.*?)\[\/gif\]$/);
                   return (
                     <div key={msg.id} className={`flex gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
                       <Avatar className="w-6 h-6 shrink-0 mt-1">
@@ -295,13 +296,19 @@ const EMOJI_LIST = [
                         <p className="text-[10px] text-primary-foreground/40 mb-0.5">
                           {prof?.display_name || "Anon"}
                         </p>
-                        <p className={`text-xs px-3 py-1.5 rounded-2xl break-words ${
-                          isMe
-                            ? "bg-accent text-accent-foreground rounded-tr-sm"
-                            : "bg-primary-foreground/10 text-primary-foreground rounded-tl-sm"
-                        }`}>
-                          {msg.content}
-                        </p>
+                        {gifMatch ? (
+                          <img src={gifMatch[1]} alt="GIF" className="rounded-xl max-w-[180px]" />
+                        ) : msg.content.length <= 2 && /\p{Emoji}/u.test(msg.content) ? (
+                          <span className="text-3xl">{msg.content}</span>
+                        ) : (
+                          <p className={`text-xs px-3 py-1.5 rounded-2xl break-words ${
+                            isMe
+                              ? "bg-accent text-accent-foreground rounded-tr-sm"
+                              : "bg-primary-foreground/10 text-primary-foreground rounded-tl-sm"
+                          }`}>
+                            {msg.content}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );
@@ -309,8 +316,86 @@ const EMOJI_LIST = [
                 <div ref={chatEndRef} />
               </div>
 
+              {/* Emoji picker */}
+              <AnimatePresence>
+                {showEmoji && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="border-t border-border/20 overflow-hidden"
+                  >
+                    <div className="grid grid-cols-6 gap-1 p-2">
+                      {EMOJI_LIST.map((e) => (
+                        <button
+                          key={e}
+                          onClick={() => sendMessage(e)}
+                          className="text-lg hover:scale-125 transition-transform p-1 rounded hover:bg-primary-foreground/10"
+                        >
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* GIF picker */}
+              <AnimatePresence>
+                {showGif && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 200, opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="border-t border-border/20 overflow-hidden flex flex-col"
+                  >
+                    <div className="px-2 pt-2 flex gap-1">
+                      <Input
+                        value={gifSearch}
+                        onChange={(e) => setGifSearch(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && searchGifs(gifSearch)}
+                        placeholder="Search GIFs..."
+                        className="bg-primary-foreground/10 border-border/30 text-primary-foreground text-[10px] h-7 placeholder:text-primary-foreground/30"
+                      />
+                      <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-primary-foreground/60" onClick={() => searchGifs(gifSearch)}>
+                        <Search className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-2 grid grid-cols-3 gap-1">
+                      {gifLoading ? (
+                        <p className="col-span-3 text-[10px] text-primary-foreground/40 text-center py-4">Searching...</p>
+                      ) : gifs.length === 0 ? (
+                        <p className="col-span-3 text-[10px] text-primary-foreground/40 text-center py-4">
+                          {gifSearch ? "No results" : "Search for GIFs 🎞️"}
+                        </p>
+                      ) : gifs.map((url, i) => (
+                        <button key={i} onClick={() => sendGif(url)} className="rounded-lg overflow-hidden hover:ring-2 ring-accent transition-all">
+                          <img src={url} alt="GIF" className="w-full h-16 object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Input */}
-              <div className="px-3 py-2 border-t border-border/20 flex gap-2">
+              <div className="px-3 py-2 border-t border-border/20 flex gap-1 items-center">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => { setShowEmoji(!showEmoji); setShowGif(false); }}
+                  className={`shrink-0 h-8 w-8 ${showEmoji ? "text-accent" : "text-primary-foreground/50"}`}
+                >
+                  <Smile className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => { setShowGif(!showGif); setShowEmoji(false); }}
+                  className={`shrink-0 h-8 w-8 ${showGif ? "text-accent" : "text-primary-foreground/50"}`}
+                >
+                  <ImageIcon className="w-4 h-4" />
+                </Button>
                 <Input
                   value={newMsg}
                   onChange={(e) => setNewMsg(e.target.value)}
@@ -318,7 +403,7 @@ const EMOJI_LIST = [
                   placeholder="Say something..."
                   className="bg-primary-foreground/10 border-border/30 text-primary-foreground text-xs placeholder:text-primary-foreground/30"
                 />
-                <Button size="icon" variant="ghost" onClick={sendMessage} className="text-accent shrink-0">
+                <Button size="icon" variant="ghost" onClick={() => sendMessage()} className="text-accent shrink-0 h-8 w-8">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
