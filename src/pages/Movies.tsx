@@ -130,7 +130,7 @@ export default function Movies() {
       embed_url: form.embedUrl || undefined,
       rating: form.rating || undefined,
     });
-    setForm({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "" });
+    setForm({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" });
     setShowForm(false);
   };
 
