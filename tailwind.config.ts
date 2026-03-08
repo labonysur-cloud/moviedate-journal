@@ -61,6 +61,7 @@ export default {
           foreground: "hsl(var(--rose-foreground))",
         },
         warm: "hsl(var(--warm))",
+        gingham: "hsl(var(--gingham))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
