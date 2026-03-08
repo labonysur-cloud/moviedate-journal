@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import vintageTv from "@/assets/vintage-tv.png";
+import heroCinema from "@/assets/hero-cinema.jpg";
 
 function getMoviePoster(movie: Movie): string {
   return movie.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop";
