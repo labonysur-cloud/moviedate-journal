@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         display: ['"Playfair Display"', 'serif'],
         body: ['"Nunito"', 'sans-serif'],
+        handwritten: ['"Caveat"', 'cursive'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -60,6 +61,7 @@ export default {
           foreground: "hsl(var(--rose-foreground))",
         },
         warm: "hsl(var(--warm))",
+        gingham: "hsl(var(--gingham))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

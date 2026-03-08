@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import heroCinema from "@/assets/hero-cinema.jpg";
+import vintageTv from "@/assets/vintage-tv.png";
 
 function getMoviePoster(movie: Movie): string {
   return movie.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop";
@@ -18,26 +18,30 @@ const features = [
   {
     icon: Film,
     title: "Movie Collection",
-    desc: "Save your favorite movies and build a shared watchlist with friends.",
+    desc: "Save your favorites and build a shared watchlist with friends.",
     to: "/movies",
+    emoji: "🎬",
   },
   {
     icon: Ticket,
     title: "Get Your Ticket",
     desc: "AI-generated vintage tickets — grab one before each movie night!",
     to: "/tickets",
+    emoji: "🎫",
   },
   {
     icon: BookHeart,
     title: "Movie Journal",
-    desc: "Write down your thoughts, feelings, and favorite moments after watching.",
+    desc: "Write down your thoughts, feelings, and favorite moments.",
     to: "/journal",
+    emoji: "📝",
   },
   {
     icon: Users,
     title: "Friends",
     desc: "Connect with your movie crew and share tickets together.",
     to: "/friends",
+    emoji: "💕",
   },
 ];
 
@@ -78,17 +82,10 @@ export default function Index() {
   const dataLoading = moviesLoading || ticketsLoading;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-polka">
       {/* Hero */}
-      <section className="relative h-[70vh] sm:h-[85vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={heroCinema}
-            alt="Cozy vintage cinema interior with warm lighting"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
-        </div>
+      <section className="relative py-16 sm:py-28 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gingham opacity-30" />
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -97,35 +94,50 @@ export default function Index() {
           className="relative z-10 text-center px-4 max-w-3xl"
         >
           <motion.div
+            initial={{ scale: 0, rotate: -10 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="mb-6"
+          >
+            <img
+              src={vintageTv}
+              alt="Vintage TV"
+              className="w-40 sm:w-56 mx-auto drop-shadow-2xl"
+            />
+          </motion.div>
+
+          <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center gap-2 bg-card/80 backdrop-blur-sm px-4 py-2 rounded-full mb-4 sm:mb-6 border border-border"
+            transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+            className="inline-flex items-center gap-2 bg-card/80 backdrop-blur-sm px-4 py-2 rounded-full mb-4 sm:mb-6 border-2 border-primary/20"
           >
-            <Popcorn className="w-4 h-4 text-accent" />
+            <Popcorn className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Your cozy movie corner</span>
+            <Heart className="w-3 h-3 text-primary fill-primary" />
           </motion.div>
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold mb-4 sm:mb-6 text-foreground leading-tight">
             Watch Together,{" "}
             <span className="text-gradient-gold">Feel Together</span>
           </h1>
+          <p className="font-handwritten text-xl sm:text-2xl text-primary/70 mb-2">~ a love letter to movie nights ~</p>
 
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-xl mx-auto leading-relaxed">
             A cozy space for friends to share movie nights, collect tickets,
-            and journal beautiful memories — no matter the distance.
+            and journal beautiful memories — no matter the distance 💌
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <Button variant="warm" size="lg" asChild>
+            <Button variant="warm" size="lg" asChild className="shadow-lg">
               <Link to="/movies">
                 <Film className="w-4 h-4 mr-1" />
                 Browse Movies
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="rounded-full" asChild>
+            <Button variant="outline" size="lg" className="rounded-full border-2 border-primary/30 hover:border-primary/60" asChild>
               <Link to="/friends">
-                <Users className="w-4 h-4 mr-1" />
+                <Heart className="w-4 h-4 mr-1" />
                 Find Friends
               </Link>
             </Button>
@@ -140,12 +152,12 @@ export default function Index() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-center mb-3 sm:mb-4 text-foreground"
+            className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-center mb-2 text-foreground"
           >
             How It Works
           </motion.h2>
-          <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-md mx-auto text-sm sm:text-base">
-            Four simple steps to the coziest movie night ever ✨
+          <p className="text-center font-handwritten text-lg sm:text-xl text-primary/60 mb-8 sm:mb-12">
+            Four simple steps to the coziest movie night ever ♡
           </p>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
@@ -159,11 +171,9 @@ export default function Index() {
               >
                 <Link
                   to={f.to}
-                  className="block group bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-border hover:border-accent transition-all hover:shadow-lg h-full"
+                  className="block group cute-card bg-card rounded-2xl p-4 sm:p-6 border-2 border-primary/10 hover:border-primary/30 h-full"
                 >
-                  <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-accent/20 transition-colors">
-                    <f.icon className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
-                  </div>
+                  <div className="text-2xl sm:text-3xl mb-2">{f.emoji}</div>
                   <h3 className="font-display text-sm sm:text-lg font-semibold mb-1 sm:mb-1.5 text-foreground">{f.title}</h3>
                   <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed hidden sm:block">{f.desc}</p>
                 </Link>
@@ -187,7 +197,7 @@ export default function Index() {
           </div>
         </section>
       ) : watchableMovies.length > 0 ? (
-        <section className="py-12 sm:py-20 px-4 bg-secondary/30">
+        <section className="py-12 sm:py-20 px-4 bg-gingham bg-secondary/20">
           <div className="container mx-auto max-w-5xl">
             <motion.h2
               initial={{ opacity: 0 }}
@@ -197,7 +207,7 @@ export default function Index() {
             >
               Watch Now 🎬
             </motion.h2>
-            <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-md mx-auto text-sm sm:text-base">
+            <p className="text-center font-handwritten text-lg text-primary/60 mb-8 sm:mb-12">
               Movies you have tickets for — jump right in!
             </p>
 
@@ -216,7 +226,7 @@ export default function Index() {
                     )
                   }
                 >
-                  <div className="relative rounded-2xl overflow-hidden border border-border hover:border-accent hover:shadow-lg transition-all">
+                  <div className="relative rounded-2xl overflow-hidden border-2 border-primary/15 hover:border-primary/40 cute-card">
                     <div className="aspect-[2/3] relative">
                       <img
                         src={getMoviePoster(movie)}
@@ -226,13 +236,13 @@ export default function Index() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-14 sm:w-16 h-14 sm:h-16 rounded-full bg-accent/90 flex items-center justify-center shadow-lg">
-                          <Play className="w-6 sm:w-7 h-6 sm:h-7 text-accent-foreground fill-accent-foreground ml-1" />
+                        <div className="w-14 sm:w-16 h-14 sm:h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-lg">
+                          <Play className="w-6 sm:w-7 h-6 sm:h-7 text-primary-foreground fill-primary-foreground ml-1" />
                         </div>
                       </div>
                       {movie.rating && (
-                        <div className="absolute top-3 right-3 flex items-center gap-1 bg-card/80 backdrop-blur-sm px-2 py-1 rounded-full">
-                          <Star className="w-3 h-3 text-accent fill-accent" />
+                        <div className="absolute top-3 right-3 flex items-center gap-1 bg-card/80 backdrop-blur-sm px-2 py-1 rounded-full border border-primary/20">
+                          <Star className="w-3 h-3 text-gold fill-gold" />
                           <span className="text-xs font-bold text-foreground">{movie.rating}</span>
                         </div>
                       )}
@@ -261,7 +271,7 @@ export default function Index() {
             >
               Live Now <Radio className="inline w-5 sm:w-6 h-5 sm:h-6 text-primary animate-pulse" />
             </motion.h2>
-            <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-md mx-auto text-sm sm:text-base">
+            <p className="text-center font-handwritten text-lg text-primary/60 mb-8 sm:mb-12">
               Friends are watching — jump in and join them!
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -275,13 +285,13 @@ export default function Index() {
                 >
                   <Link
                     to={`/watch-together?invite=${room.invite_code}`}
-                    className="block group bg-card rounded-2xl p-4 sm:p-5 border border-border hover:border-primary hover:shadow-lg transition-all"
+                    className="block group cute-card bg-card rounded-2xl p-4 sm:p-5 border-2 border-primary/10 hover:border-primary/30"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <h3 className="font-display text-base sm:text-lg font-semibold text-foreground truncate flex-1 min-w-0">
                         {room.movie_title}
                       </h3>
-                      <Badge variant="secondary" className="ml-2 shrink-0">
+                      <Badge variant="secondary" className="ml-2 shrink-0 rounded-full">
                         <Users className="w-3 h-3 mr-1" />
                         {room.memberCount}
                       </Badge>
@@ -302,8 +312,9 @@ export default function Index() {
         </section>
       )}
 
-      <footer className="border-t border-border py-6 sm:py-8 text-center text-muted-foreground text-xs sm:text-sm">
-        <p>Made with <Heart className="w-3 h-3 inline text-primary" /> for movie nights with friends</p>
+      <footer className="border-t-2 border-primary/10 py-6 sm:py-8 text-center text-muted-foreground text-xs sm:text-sm bg-gingham">
+        <p>Made with <Heart className="w-3 h-3 inline text-primary fill-primary" /> for movie nights with friends</p>
+        <p className="font-handwritten text-primary/50 mt-1">~ cozy cinema ♡ ~</p>
       </footer>
     </div>
   );
