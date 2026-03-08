@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Ticket, BookHeart } from "lucide-react";
@@ -5,10 +6,19 @@ import { Button } from "@/components/ui/button";
 
 export default function Watch() {
   const [searchParams] = useSearchParams();
-  const url = searchParams.get("url") || "";
+  const baseUrl = searchParams.get("url") || "";
   const title = searchParams.get("title") || "Movie";
+  const seasons = parseInt(searchParams.get("seasons") || "0");
 
-  if (!url) {
+  const [season, setSeason] = useState(1);
+  const [episode, setEpisode] = useState(1);
+
+  // Build URL with current season/episode for series
+  const currentUrl = seasons > 0
+    ? baseUrl.replace(/detailSe=\d+/, `detailSe=${season}`).replace(/detailEp=\d+/, `detailEp=${episode}`)
+    : baseUrl;
+
+  if (!baseUrl) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">No movie URL provided.</p>
@@ -31,7 +41,10 @@ export default function Watch() {
               Back
             </Button>
           </Link>
-          <h1 className="font-display text-lg font-semibold text-primary-foreground">{title}</h1>
+          <h1 className="font-display text-lg font-semibold text-primary-foreground">
+            {title}
+            {seasons > 0 && <span className="text-sm font-body font-normal text-primary-foreground/60 ml-2">S{season} · E{episode}</span>}
+          </h1>
         </div>
         <div className="flex items-center gap-2">
           <Link to={`/tickets?movie=${encodeURIComponent(title)}`}>
@@ -49,11 +62,54 @@ export default function Watch() {
         </div>
       </motion.div>
 
+      {/* Season/Episode selector for series */}
+      {seasons > 0 && (
+        <div className="px-4 py-3 bg-card/5 border-b border-border/10 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-primary-foreground/50 uppercase tracking-wide">Season</span>
+            <div className="flex gap-1 flex-wrap">
+              {Array.from({ length: seasons }, (_, i) => i + 1).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => { setSeason(s); setEpisode(1); }}
+                  className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
+                    season === s
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-primary-foreground/10 text-primary-foreground/60 hover:bg-primary-foreground/20"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-primary-foreground/50 uppercase tracking-wide">Episode</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setEpisode((e) => Math.max(1, e - 1))}
+                className="w-8 h-8 rounded-lg bg-primary-foreground/10 text-primary-foreground/60 hover:bg-primary-foreground/20 text-sm font-bold"
+              >
+                ‹
+              </button>
+              <span className="w-8 text-center text-sm font-semibold text-primary-foreground">{episode}</span>
+              <button
+                onClick={() => setEpisode((e) => e + 1)}
+                className="w-8 h-8 rounded-lg bg-primary-foreground/10 text-primary-foreground/60 hover:bg-primary-foreground/20 text-sm font-bold"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Video embed */}
-      <div className="w-full" style={{ height: "calc(100vh - 120px)" }}>
+      <div className="w-full" style={{ height: seasons > 0 ? "calc(100vh - 168px)" : "calc(100vh - 120px)" }}>
         <iframe
-          src={url}
-          title={title}
+          key={currentUrl}
+          src={currentUrl}
+          title={`${title} S${season}E${episode}`}
           className="w-full h-full border-0"
           allowFullScreen
           allow="autoplay; fullscreen; picture-in-picture"
