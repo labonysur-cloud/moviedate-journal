@@ -60,6 +60,8 @@ const defaultMovies: Movie[] = [
     addedBy: "You",
     rating: "8.7",
     watchUrl: "https://moviebox.ph/detail/stranger-things-cCOciFua797?id=5997883574990675144&scene=&season=1&page_from=search_detail&type=/movie/detail",
+    embedUrl: "https://123movienow.cc/spa/videoPlayPage/movies/stranger-things-hindi-Aw3jeTNwZX3?id=3330020475752907416&type=/movie/detail&detailSe=1&detailEp=1&lang=en",
+    totalSeasons: 5,
   },
   {
     id: "3",
