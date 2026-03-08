@@ -19,6 +19,7 @@ function getMoviePoster(movie: Movie): string {
 export default function Movies() {
   const { movies, loading, addMovie } = useMovies();
   const { hasTicketForMovie } = useTickets();
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "" });
   const [classifying, setClassifying] = useState(false);
