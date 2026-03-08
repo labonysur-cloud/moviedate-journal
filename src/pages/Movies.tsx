@@ -147,10 +147,6 @@ export default function Movies() {
               <Sparkles className="w-4 h-4 mr-1" />
               {showRecs ? "Hide" : "AI Suggest"}
             </Button>
-            <Button variant="warm" size="sm" onClick={() => { setShowForm(!showForm); setShowRecs(false); }}>
-              {showForm ? <X className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
-              {showForm ? "Cancel" : "Add Movie"}
-            </Button>
           </div>
         </div>
 
