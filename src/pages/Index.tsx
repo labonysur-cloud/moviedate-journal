@@ -1,9 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Film, Ticket, BookHeart, Popcorn, Heart, Play, Star, Users } from "lucide-react";
+import { Film, Ticket, BookHeart, Popcorn, Heart, Play, Star, Users, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMovies, type Movie } from "@/hooks/useMovies";
 import { useTickets } from "@/hooks/useTickets";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 import heroCinema from "@/assets/hero-cinema.jpg";
 
 function getMoviePoster(movie: Movie): string {
@@ -42,6 +45,33 @@ export default function Index() {
   const { movies } = useMovies();
   const { hasTicketForMovie } = useTickets();
   const watchableMovies = movies.filter((m) => m.embed_url && hasTicketForMovie(m.id));
+
+  const [activeRooms, setActiveRooms] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      const { data } = await supabase
+        .from("watch_rooms")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (data && data.length > 0) {
+        // Fetch member counts
+        const roomIds = data.map((r) => r.id);
+        const { data: members } = await supabase
+          .from("room_members")
+          .select("room_id")
+          .in("room_id", roomIds);
+        const counts: Record<string, number> = {};
+        members?.forEach((m) => {
+          counts[m.room_id] = (counts[m.room_id] || 0) + 1;
+        });
+        setActiveRooms(data.map((r) => ({ ...r, memberCount: counts[r.id] || 0 })));
+      }
+    };
+    fetchRooms();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -191,6 +221,59 @@ export default function Index() {
                       <p className="text-xs text-muted-foreground">{movie.genre} · {movie.year}</p>
                     </div>
                   </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Active Watch Rooms */}
+      {activeRooms.length > 0 && (
+        <section className="py-20 px-4">
+          <div className="container mx-auto max-w-5xl">
+            <motion.h2
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-3xl sm:text-4xl font-display font-bold text-center mb-4 text-foreground"
+            >
+              Live Now <Radio className="inline w-6 h-6 text-primary animate-pulse" />
+            </motion.h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
+              Friends are watching — jump in and join them!
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeRooms.map((room, i) => (
+                <motion.div
+                  key={room.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Link
+                    to={`/watch-together?invite=${room.invite_code}`}
+                    className="block group bg-card rounded-2xl p-5 border border-border hover:border-primary hover:shadow-lg transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="font-display text-lg font-semibold text-foreground truncate flex-1 min-w-0">
+                        {room.movie_title}
+                      </h3>
+                      <Badge variant="secondary" className="ml-2 shrink-0">
+                        <Users className="w-3 h-3 mr-1" />
+                        {room.memberCount}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-sm text-muted-foreground">Watching now</span>
+                    </div>
+                    <div className="mt-3 flex items-center gap-1 text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Play className="w-4 h-4" />
+                      Join room
+                    </div>
+                  </Link>
                 </motion.div>
               ))}
             </div>
