@@ -3,9 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PageTransition from "@/components/PageTransition";
 import Navbar from "@/components/Navbar";
 import Index from "./pages/Index";
 import Watch from "./pages/Watch";
@@ -21,6 +23,39 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <Navbar />
+              <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                  <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+                  <Route path="/movies" element={<PageTransition><Movies /></PageTransition>} />
+                  <Route path="/watch" element={<PageTransition><Watch /></PageTransition>} />
+                  <Route path="/tickets" element={<PageTransition><Tickets /></PageTransition>} />
+                  <Route path="/journal" element={<PageTransition><Journal /></PageTransition>} />
+                  <Route path="/friends" element={<PageTransition><Friends /></PageTransition>} />
+                  <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+                  <Route path="/watch-together" element={<PageTransition><WatchRoom /></PageTransition>} />
+                  <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+                </Routes>
+              </AnimatePresence>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
@@ -29,29 +64,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <Navbar />
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/movies" element={<Movies />} />
-                      <Route path="/watch" element={<Watch />} />
-                      <Route path="/tickets" element={<Tickets />} />
-                      <Route path="/journal" element={<Journal />} />
-                      <Route path="/friends" element={<Friends />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/watch-together" element={<WatchRoom />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
+            <AnimatedRoutes />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
