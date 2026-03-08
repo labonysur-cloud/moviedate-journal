@@ -15,6 +15,7 @@ import Friends from "./pages/Friends";
 import Profile from "./pages/Profile";
 import WatchRoom from "./pages/WatchRoom";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route
               path="/*"
               element={
