@@ -46,6 +46,33 @@ export default function Index() {
   const { hasTicketForMovie } = useTickets();
   const watchableMovies = movies.filter((m) => m.embed_url && hasTicketForMovie(m.id));
 
+  const [activeRooms, setActiveRooms] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      const { data } = await supabase
+        .from("watch_rooms")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (data && data.length > 0) {
+        // Fetch member counts
+        const roomIds = data.map((r) => r.id);
+        const { data: members } = await supabase
+          .from("room_members")
+          .select("room_id")
+          .in("room_id", roomIds);
+        const counts: Record<string, number> = {};
+        members?.forEach((m) => {
+          counts[m.room_id] = (counts[m.room_id] || 0) + 1;
+        });
+        setActiveRooms(data.map((r) => ({ ...r, memberCount: counts[r.id] || 0 })));
+      }
+    };
+    fetchRooms();
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
