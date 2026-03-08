@@ -22,7 +22,13 @@ interface RoomMember {
   profile?: { display_name: string; avatar_url: string | null };
 }
 
-export default function WatchRoom() {
+const EMOJI_LIST = [
+  "😂", "❤️", "🔥", "👏", "😍", "🥺", "😭", "🤣", "💀", "✨",
+  "🎬", "🍿", "👀", "😱", "🥰", "😏", "💕", "🙌", "😤", "🫣",
+  "😮", "🤯", "💔", "🎉", "👻", "😴", "🤩", "😈", "💖", "🫶",
+];
+
+
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get("room");
   const inviteCode = searchParams.get("invite");
