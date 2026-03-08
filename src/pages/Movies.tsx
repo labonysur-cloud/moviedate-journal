@@ -150,20 +150,29 @@ export default function Movies() {
                   
                   {/* Action buttons */}
                   <div className="flex gap-2 mt-4">
-                    {movie.watchUrl && (
+                    {movie.embedUrl ? (
+                      <Button
+                        variant="ticket"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => navigate(`/watch?url=${encodeURIComponent(movie.embedUrl!)}&title=${encodeURIComponent(movie.title)}`)}
+                      >
+                        <Play className="w-3 h-3 mr-1" />
+                        Watch Now
+                      </Button>
+                    ) : movie.watchUrl ? (
                       <a
                         href={movie.watchUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1"
-                        onClick={(e) => e.stopPropagation()}
                       >
                         <Button variant="ticket" size="sm" className="w-full">
-                          <Play className="w-3 h-3 mr-1" />
+                          <ExternalLink className="w-3 h-3 mr-1" />
                           Watch on MovieBox
                         </Button>
                       </a>
-                    )}
+                    ) : null}
                     <Button
                       variant="outline"
                       size="sm"
