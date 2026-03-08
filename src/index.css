@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Nunito:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Nunito:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,95 +6,99 @@
 
 @layer base {
   :root {
-    --background: 30 30% 96%;
-    --foreground: 350 20% 15%;
+    --background: 10 40% 96%;
+    --foreground: 350 30% 18%;
 
-    --card: 30 25% 93%;
-    --card-foreground: 350 20% 15%;
+    --card: 10 45% 93%;
+    --card-foreground: 350 30% 18%;
 
-    --popover: 30 30% 96%;
-    --popover-foreground: 350 20% 15%;
+    --popover: 10 40% 96%;
+    --popover-foreground: 350 30% 18%;
 
-    --primary: 350 45% 35%;
-    --primary-foreground: 30 30% 96%;
+    --primary: 350 60% 42%;
+    --primary-foreground: 10 50% 97%;
 
-    --secondary: 35 40% 85%;
-    --secondary-foreground: 350 20% 15%;
+    --secondary: 10 50% 88%;
+    --secondary-foreground: 350 30% 18%;
 
-    --muted: 30 20% 90%;
-    --muted-foreground: 350 10% 45%;
+    --muted: 10 25% 90%;
+    --muted-foreground: 350 15% 45%;
 
-    --accent: 40 60% 55%;
-    --accent-foreground: 350 20% 15%;
+    --accent: 350 55% 55%;
+    --accent-foreground: 10 50% 97%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 30 20% 85%;
-    --input: 30 20% 85%;
-    --ring: 350 45% 35%;
+    --border: 350 30% 82%;
+    --input: 350 25% 84%;
+    --ring: 350 60% 42%;
 
     --radius: 0.75rem;
 
-    --gold: 40 70% 50%;
-    --gold-foreground: 30 30% 96%;
-    --rose: 340 40% 70%;
-    --rose-foreground: 350 20% 15%;
-    --warm: 25 50% 50%;
+    --gold: 35 70% 52%;
+    --gold-foreground: 10 50% 97%;
+    --rose: 350 50% 65%;
+    --rose-foreground: 350 30% 18%;
+    --warm: 15 55% 50%;
 
-    --sidebar-background: 30 25% 93%;
-    --sidebar-foreground: 350 20% 15%;
-    --sidebar-primary: 350 45% 35%;
-    --sidebar-primary-foreground: 30 30% 96%;
-    --sidebar-accent: 30 20% 90%;
-    --sidebar-accent-foreground: 350 20% 15%;
-    --sidebar-border: 30 20% 85%;
-    --sidebar-ring: 350 45% 35%;
+    --gingham: 350 60% 42%;
+
+    --sidebar-background: 10 45% 93%;
+    --sidebar-foreground: 350 30% 18%;
+    --sidebar-primary: 350 60% 42%;
+    --sidebar-primary-foreground: 10 50% 97%;
+    --sidebar-accent: 10 25% 90%;
+    --sidebar-accent-foreground: 350 30% 18%;
+    --sidebar-border: 350 30% 82%;
+    --sidebar-ring: 350 60% 42%;
   }
 
   .dark {
-    --background: 350 15% 10%;
-    --foreground: 30 25% 90%;
+    --background: 350 25% 8%;
+    --foreground: 10 30% 90%;
 
-    --card: 350 15% 14%;
-    --card-foreground: 30 25% 90%;
+    --card: 350 22% 12%;
+    --card-foreground: 10 30% 90%;
 
-    --popover: 350 15% 10%;
-    --popover-foreground: 30 25% 90%;
+    --popover: 350 25% 8%;
+    --popover-foreground: 10 30% 90%;
 
-    --primary: 350 50% 55%;
-    --primary-foreground: 30 30% 96%;
+    --primary: 350 55% 50%;
+    --primary-foreground: 10 50% 97%;
 
-    --secondary: 350 15% 20%;
-    --secondary-foreground: 30 25% 90%;
+    --secondary: 350 20% 18%;
+    --secondary-foreground: 10 30% 90%;
 
-    --muted: 350 10% 18%;
-    --muted-foreground: 30 15% 55%;
+    --muted: 350 15% 16%;
+    --muted-foreground: 10 15% 55%;
 
-    --accent: 40 60% 55%;
-    --accent-foreground: 30 30% 96%;
+    --accent: 350 50% 58%;
+    --accent-foreground: 10 50% 97%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 350 10% 20%;
-    --input: 350 10% 20%;
-    --ring: 350 50% 55%;
+    --border: 350 15% 20%;
+    --input: 350 15% 20%;
+    --ring: 350 55% 50%;
 
-    --gold: 40 70% 50%;
-    --gold-foreground: 30 30% 96%;
-    --rose: 340 40% 60%;
-    --rose-foreground: 30 25% 90%;
-    --warm: 25 50% 50%;
+    --gold: 35 70% 52%;
+    --gold-foreground: 10 50% 97%;
+    --rose: 350 45% 55%;
+    --rose-foreground: 10 30% 90%;
+    --warm: 15 55% 50%;
 
-    --sidebar-background: 350 15% 14%;
-    --sidebar-foreground: 30 25% 90%;
-    --sidebar-primary: 350 50% 55%;
-    --sidebar-primary-foreground: 30 30% 96%;
-    --sidebar-accent: 350 10% 18%;
-    --sidebar-accent-foreground: 30 25% 90%;
-    --sidebar-border: 350 10% 20%;
-    --sidebar-ring: 350 50% 55%;
+    --gingham: 350 55% 50%;
+
+    --sidebar-background: 350 22% 12%;
+    --sidebar-foreground: 10 30% 90%;
+    --sidebar-primary: 350 55% 50%;
+    --sidebar-primary-foreground: 10 50% 97%;
+    --sidebar-accent: 350 15% 16%;
+    --sidebar-accent-foreground: 10 30% 90%;
+    --sidebar-border: 350 15% 20%;
+    --sidebar-ring: 350 55% 50%;
   }
 }
 
@@ -112,9 +116,35 @@
   }
 }
 
+/* Gingham pattern background */
+.bg-gingham {
+  background-image:
+    linear-gradient(45deg, hsl(var(--gingham) / 0.12) 25%, transparent 25%),
+    linear-gradient(-45deg, hsl(var(--gingham) / 0.12) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, hsl(var(--gingham) / 0.12) 75%),
+    linear-gradient(-45deg, transparent 75%, hsl(var(--gingham) / 0.12) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+/* Polka dot pattern */
+.bg-polka {
+  background-image: radial-gradient(circle, hsl(var(--rose) / 0.2) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+/* Cute scallop border */
+.border-scallop {
+  --scallop-size: 10px;
+  mask-image: radial-gradient(circle at 50% 0%, transparent 35%, black 36%);
+  mask-size: var(--scallop-size) var(--scallop-size);
+  mask-position: 50% 100%;
+  mask-repeat: repeat-x;
+}
+
 @layer utilities {
   .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--warm)), hsl(var(--gold)));
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--warm)), hsl(var(--rose)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -129,11 +159,15 @@
     background: linear-gradient(
       110deg,
       transparent 25%,
-      hsl(var(--gold) / 0.15) 50%,
+      hsl(var(--rose) / 0.15) 50%,
       transparent 75%
     );
     background-size: 200% 100%;
     animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .font-handwritten {
+    font-family: 'Caveat', cursive;
   }
 }
 
@@ -149,4 +183,13 @@
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+/* Cute card hover effect */
+.cute-card {
+  transition: all 0.3s ease;
+}
+.cute-card:hover {
+  transform: translateY(-4px) rotate(-0.5deg);
+  box-shadow: 0 12px 32px -8px hsl(var(--primary) / 0.2);
 }

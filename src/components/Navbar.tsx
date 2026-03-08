@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Film, Ticket, BookHeart, Home, Users, UserCircle, Moon, Sun, Menu, X } from "lucide-react";
+import { Film, Ticket, BookHeart, Home, Users, UserCircle, Moon, Sun, Menu, X, Cherry, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { StarBurstIcon } from "@/components/icons/CinemaIcons";
 import { useTheme } from "next-themes";
 
 const links = [
@@ -23,26 +22,27 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border">
+    <nav className="sticky top-0 z-50 bg-gingham backdrop-blur-md bg-background/90 border-b-2 border-primary/20">
       <div className="container mx-auto px-4 flex items-center justify-between h-14 sm:h-16">
         <Link to="/" className="flex items-center gap-2 group">
-          <StarBurstIcon className="w-5 h-5" />
-          <span className="font-display text-lg sm:text-xl font-bold text-foreground">
+          <Heart className="w-5 h-5 text-primary fill-primary group-hover:scale-110 transition-transform" />
+          <span className="font-display text-lg sm:text-xl font-bold text-primary">
             Cozy Cinema
           </span>
+          <span className="text-xs font-handwritten text-rose hidden sm:inline">♡</span>
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-0.5">
           {links.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all",
                 location.pathname === to
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
               <Icon className="w-4 h-4" />
@@ -53,7 +53,7 @@ export default function Navbar() {
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="ml-1"
+            className="ml-1 rounded-full hover:bg-primary/10"
           >
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -64,7 +64,7 @@ export default function Navbar() {
               variant="ghost"
               size="sm"
               onClick={signOut}
-              className="ml-1 text-muted-foreground text-xs"
+              className="ml-1 text-muted-foreground text-xs rounded-full"
             >
               Sign out
             </Button>
@@ -77,7 +77,7 @@ export default function Navbar() {
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-9 w-9"
+            className="h-9 w-9 rounded-full"
           >
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -86,7 +86,7 @@ export default function Navbar() {
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="h-9 w-9"
+            className="h-9 w-9 rounded-full"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
@@ -95,17 +95,17 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md px-4 pb-4 pt-2 space-y-1">
+        <div className="md:hidden border-t-2 border-primary/10 bg-background/95 backdrop-blur-md px-4 pb-4 pt-2 space-y-1 bg-polka">
           {links.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
                 location.pathname === to
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
               <Icon className="w-4 h-4" />
@@ -117,7 +117,7 @@ export default function Navbar() {
               variant="ghost"
               size="sm"
               onClick={() => { signOut(); setMobileOpen(false); }}
-              className="w-full justify-start text-muted-foreground text-xs mt-2"
+              className="w-full justify-start text-muted-foreground text-xs mt-2 rounded-xl"
             >
               Sign out
             </Button>
