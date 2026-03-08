@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookHeart, Plus, Heart, X, Pen } from "lucide-react";
+import { BookHeart, Plus, Heart, X, Pen, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +25,9 @@ export default function Journal() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ movieTitle: "", content: "", mood: "", author: "" });
+  const [promptsLoading, setPromptsLoading] = useState(false);
+  const [prompts, setPrompts] = useState<string[]>([]);
+  const [starter, setStarter] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -38,6 +41,28 @@ export default function Journal() {
         setLoading(false);
       });
   }, [user]);
+
+  const handleGetPrompts = async () => {
+    if (!form.movieTitle) {
+      toast.error("Enter a movie title first");
+      return;
+    }
+    setPromptsLoading(true);
+    setPrompts([]);
+    setStarter("");
+    try {
+      const { data, error } = await supabase.functions.invoke("movie-ai", {
+        body: { action: "journal_prompt", movieTitle: form.movieTitle },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setPrompts(data.prompts || []);
+      setStarter(data.starter || "");
+    } catch {
+      toast.error("Couldn't generate prompts");
+    }
+    setPromptsLoading(false);
+  };
 
   const handleAdd = async () => {
     if (!form.movieTitle || !form.content || !user) return;
@@ -57,6 +82,8 @@ export default function Journal() {
     if (error) { toast.error("Failed to save entry"); return; }
     setEntries((prev) => [data, ...prev]);
     setForm({ movieTitle: "", content: "", mood: "", author: "" });
+    setPrompts([]);
+    setStarter("");
     setShowForm(false);
     toast.success("Entry saved! 📖");
   };
@@ -91,11 +118,67 @@ export default function Journal() {
                   <Pen className="w-4 h-4 text-accent" />
                   Write about your movie night
                 </h3>
-                <Input
-                  placeholder="Which movie/show did you watch?"
-                  value={form.movieTitle}
-                  onChange={(e) => setForm({ ...form, movieTitle: e.target.value })}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Which movie/show did you watch?"
+                    value={form.movieTitle}
+                    onChange={(e) => setForm({ ...form, movieTitle: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={handleGetPrompts}
+                    disabled={promptsLoading || !form.movieTitle}
+                    className="whitespace-nowrap"
+                  >
+                    {promptsLoading ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 mr-1" />
+                    )}
+                    AI Prompts
+                  </Button>
+                </div>
+
+                {/* AI Prompts */}
+                <AnimatePresence>
+                  {prompts.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="bg-secondary/50 rounded-xl p-4 border border-border space-y-2"
+                    >
+                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> Writing prompts
+                      </p>
+                      {prompts.map((prompt, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setForm((prev) => ({
+                            ...prev,
+                            content: prev.content ? prev.content + "\n\n" + prompt : prompt,
+                          }))}
+                          className="block w-full text-left text-sm text-foreground/80 hover:text-foreground p-2 rounded-lg hover:bg-secondary transition-colors"
+                        >
+                          💡 {prompt}
+                        </button>
+                      ))}
+                      {starter && (
+                        <button
+                          onClick={() => setForm((prev) => ({
+                            ...prev,
+                            content: prev.content ? prev.content : starter,
+                          }))}
+                          className="block w-full text-left text-sm text-primary hover:text-primary/80 p-2 rounded-lg hover:bg-secondary transition-colors font-medium"
+                        >
+                          ✨ Use starter: "{starter}"
+                        </button>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <Input
                   placeholder="Your name"
                   value={form.author}
