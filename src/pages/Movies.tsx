@@ -117,7 +117,7 @@ export default function Movies() {
               <div className="bg-card rounded-2xl border border-border overflow-hidden hover:border-accent hover:shadow-lg transition-all">
                 <div className="aspect-[2/3] relative overflow-hidden">
                   <img
-                    src={movie.poster}
+                    src={getMoviePoster(movie)}
                     alt={movie.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
