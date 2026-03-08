@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { Film, Ticket, BookHeart, Home, Users, UserCircle } from "lucide-react";
+import { Film, Ticket, BookHeart, Home, Users, UserCircle, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { StarBurstIcon } from "@/components/icons/CinemaIcons";
+import { useTheme } from "next-themes";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
