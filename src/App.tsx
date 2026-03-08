@@ -12,6 +12,7 @@ import Movies from "./pages/Movies";
 import Tickets from "./pages/Tickets";
 import Journal from "./pages/Journal";
 import Friends from "./pages/Friends";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
