@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Film, Ticket, BookHeart, Home } from "lucide-react";
+import { Film, Ticket, BookHeart, Home, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ const links = [
   { to: "/movies", label: "Movies", icon: Film },
   { to: "/tickets", label: "Tickets", icon: Ticket },
   { to: "/journal", label: "Journal", icon: BookHeart },
+  { to: "/friends", label: "Friends", icon: Users },
 ];
 
 export default function Navbar() {
