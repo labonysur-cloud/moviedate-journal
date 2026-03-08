@@ -261,6 +261,13 @@ export default function WatchRoom() {
               exit={{ width: 0, opacity: 0 }}
               className="border-l border-border/20 bg-card/10 backdrop-blur-sm flex flex-col overflow-hidden shrink-0"
             >
+              {/* Header with close */}
+              <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between shrink-0">
+                <span className="text-[11px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Chat</span>
+                <button onClick={() => setChatOpen(false)} className="text-primary-foreground/40 hover:text-primary-foreground transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
               {/* Members bar */}
               <div className="px-3 py-2 border-b border-border/20 flex items-center gap-1 overflow-x-auto">
                 {members.map((m) => (
