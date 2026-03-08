@@ -41,6 +41,7 @@ const App = () => (
                     <Route path="/journal" element={<Journal />} />
                     <Route path="/friends" element={<Friends />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/watch-together" element={<WatchRoom />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </ProtectedRoute>
