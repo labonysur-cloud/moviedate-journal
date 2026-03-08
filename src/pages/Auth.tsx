@@ -32,19 +32,39 @@ export default function Auth() {
 
   if (user) return <Navigate to="/" replace />;
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast({ title: "Enter your email", description: "We need your email to send a reset link", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast({
+        title: "Check your email ✉️",
+        description: "We sent you a password reset link!",
+      });
+    } catch (err: any) {
+      toast({ title: "Oops!", description: err.message || "Something went wrong", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isForgot) return handleForgotPassword(e);
     if (!email.trim() || !password.trim()) return;
     setSubmitting(true);
 
     try {
       if (isSignUp) {
         if (password.length < 6) {
-          toast({
-            title: "Password too short",
-            description: "Please use at least 6 characters",
-            variant: "destructive",
-          });
+          toast({ title: "Password too short", description: "Please use at least 6 characters", variant: "destructive" });
           return;
         }
         const { error } = await supabase.auth.signUp({
@@ -61,10 +81,7 @@ export default function Auth() {
           }
           throw error;
         }
-        toast({
-          title: "Check your email ✉️",
-          description: "We sent you a confirmation link to get started!",
-        });
+        toast({ title: "Check your email ✉️", description: "We sent you a confirmation link to get started!" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -78,11 +95,7 @@ export default function Auth() {
         }
       }
     } catch (err: any) {
-      toast({
-        title: "Oops!",
-        description: err.message || "Something went wrong",
-        variant: "destructive",
-      });
+      toast({ title: "Oops!", description: err.message || "Something went wrong", variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
