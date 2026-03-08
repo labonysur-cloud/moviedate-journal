@@ -12,6 +12,7 @@ import Movies from "./pages/Movies";
 import Tickets from "./pages/Tickets";
 import Journal from "./pages/Journal";
 import Friends from "./pages/Friends";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -38,6 +39,7 @@ const App = () => (
                     <Route path="/tickets" element={<Tickets />} />
                     <Route path="/journal" element={<Journal />} />
                     <Route path="/friends" element={<Friends />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </ProtectedRoute>
