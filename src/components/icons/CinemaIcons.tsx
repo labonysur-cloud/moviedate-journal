@@ -6,7 +6,7 @@ export function PopcornIcon({ className = "w-8 h-8" }: { className?: string }) {
       viewBox="0 0 64 64"
       className={className}
       initial={{ rotate: -5 }}
-      animate={{ rotate: [−5, 5, -5] }}
+      animate={{ rotate: [-5, 5, -5] }}
       transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
     >
       <rect x="16" y="28" width="32" height="30" rx="4" fill="hsl(var(--accent))" stroke="hsl(var(--foreground))" strokeWidth="2" />
