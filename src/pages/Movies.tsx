@@ -223,7 +223,49 @@ export default function Movies() {
           )}
         </AnimatePresence>
 
-        {/* Add Movie Form */}
+        <AnimatePresence>
+          {!showForm && !showRecs && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-8 sm:mb-10"
+            >
+              <div className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-primary/10 max-w-lg mx-auto text-center">
+                <h3 className="font-display text-lg font-semibold text-foreground mb-1">Add a movie ♡</h3>
+                <p className="text-sm text-muted-foreground mb-4">Paste a link or type a title — AI will figure out the rest!</p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Paste a movie link or type a title..."
+                    value={linkInput}
+                    onChange={(e) => setLinkInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSmartAutoFill()}
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="warm"
+                    onClick={handleSmartAutoFill}
+                    disabled={autofilling || !linkInput.trim()}
+                  >
+                    {autofilling ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="text-xs text-muted-foreground hover:text-primary mt-3 underline underline-offset-2"
+                >
+                  Or add manually
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Editable Movie Form */}
         <AnimatePresence>
           {showForm && (
             <motion.div
@@ -232,41 +274,30 @@ export default function Movies() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden mb-8 sm:mb-10"
             >
-              <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border space-y-4 max-w-lg">
-                <h3 className="font-display text-lg font-semibold text-foreground">Add a new movie</h3>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Movie or show title"
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={handleAutoFill}
-                    disabled={autofilling || !form.title}
-                    className="whitespace-nowrap"
-                  >
-                    {autofilling ? (
-                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                    ) : (
-                      <Wand2 className="w-4 h-4 mr-1" />
-                    )}
-                    <span className="hidden sm:inline">Auto-fill</span>
+              <div className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-primary/10 space-y-4 max-w-lg">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display text-lg font-semibold text-foreground">Movie details</h3>
+                  <Button variant="ghost" size="icon" onClick={() => { setShowForm(false); setForm({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" }); }}>
+                    <X className="w-4 h-4" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {form.poster && (
+                  <div className="flex justify-center">
+                    <img src={form.poster} alt={form.title} className="h-32 rounded-xl object-cover border-2 border-primary/10 shadow-md" />
+                  </div>
+                )}
+                <Input placeholder="Movie or show title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                <div className="grid grid-cols-2 gap-3">
                   <Input placeholder="Genre" value={form.genre} onChange={(e) => setForm({ ...form, genre: e.target.value })} />
                   <Input placeholder="Year" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} />
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <Input placeholder="Rating (e.g. 8.5)" value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })} />
                   <Input placeholder="Poster image URL" value={form.poster} onChange={(e) => setForm({ ...form, poster: e.target.value })} />
                 </div>
-                <Input placeholder="Watch URL (optional)" value={form.watchUrl} onChange={(e) => setForm({ ...form, watchUrl: e.target.value })} />
-                <Input placeholder="Embed URL for in-app playback (optional)" value={form.embedUrl} onChange={(e) => setForm({ ...form, embedUrl: e.target.value })} />
+                <Input placeholder="Watch / Embed URL (optional)" value={form.embedUrl} onChange={(e) => setForm({ ...form, embedUrl: e.target.value })} />
                 <Textarea placeholder="Short description..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-                <Button variant="ticket" onClick={handleAdd}>
+                <Button variant="ticket" onClick={handleAdd} disabled={!form.title}>
                   <Film className="w-4 h-4 mr-1" />
                   Add to Collection
                 </Button>
