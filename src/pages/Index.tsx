@@ -40,6 +40,9 @@ const features = [
 ];
 
 export default function Index() {
+  const navigate = useNavigate();
+  const movies = getMovies().filter((m) => m.embedUrl);
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
