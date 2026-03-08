@@ -38,7 +38,7 @@ const defaultMovies: Movie[] = [
     title: "Gilmore Girls",
     genre: "Comedy / Drama",
     year: "2000",
-    poster: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=600&fit=crop",
+    poster: "",
     description: "A heartwarming story about a mother-daughter duo navigating life, love, and lots of coffee in Stars Hollow.",
     addedBy: "You",
   },
@@ -47,7 +47,7 @@ const defaultMovies: Movie[] = [
     title: "Stranger Things",
     genre: "Sci-Fi / Horror",
     year: "2016",
-    poster: "https://images.unsplash.com/photo-1534809027769-b00d750a6bac?w=400&h=600&fit=crop",
+    poster: "",
     description: "A group of kids uncover supernatural mysteries in their small town of Hawkins, Indiana.",
     addedBy: "You",
   },
@@ -56,7 +56,7 @@ const defaultMovies: Movie[] = [
     title: "Mean Girls",
     genre: "Comedy",
     year: "2004",
-    poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop",
+    poster: "",
     description: "A homeschooled teen navigates the jungle of high school cliques and discovers the true meaning of friendship.",
     addedBy: "You",
   },
@@ -67,6 +67,10 @@ export function getMovies(): Movie[] {
   if (stored) return JSON.parse(stored);
   localStorage.setItem(MOVIES_KEY, JSON.stringify(defaultMovies));
   return defaultMovies;
+}
+
+export function resetMovies(): void {
+  localStorage.removeItem(MOVIES_KEY);
 }
 
 export function addMovie(movie: Omit<Movie, "id">): Movie {

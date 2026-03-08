@@ -6,6 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getMovies, addMovie, type Movie } from "@/lib/store";
 import { useNavigate } from "react-router-dom";
+import posterGilmoreGirls from "@/assets/poster-gilmore-girls.jpg";
+import posterStrangerThings from "@/assets/poster-stranger-things.jpg";
+import posterMeanGirls from "@/assets/poster-mean-girls.jpg";
+
+const posterMap: Record<string, string> = {
+  "Gilmore Girls": posterGilmoreGirls,
+  "Stranger Things": posterStrangerThings,
+  "Mean Girls": posterMeanGirls,
+};
+
+function getMoviePoster(movie: Movie): string {
+  return posterMap[movie.title] || movie.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop";
+}
 
 export default function Movies() {
   const [movies, setMovies] = useState<Movie[]>(getMovies);
@@ -104,7 +117,7 @@ export default function Movies() {
               <div className="bg-card rounded-2xl border border-border overflow-hidden hover:border-accent hover:shadow-lg transition-all">
                 <div className="aspect-[2/3] relative overflow-hidden">
                   <img
-                    src={movie.poster}
+                    src={getMoviePoster(movie)}
                     alt={movie.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
