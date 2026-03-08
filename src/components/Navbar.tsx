@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { Film, Ticket, BookHeart, Home, Users, UserCircle } from "lucide-react";
+import { Film, Ticket, BookHeart, Home, Users, UserCircle, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { StarBurstIcon } from "@/components/icons/CinemaIcons";
+import { useTheme } from "next-themes";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
@@ -17,6 +18,7 @@ const links = [
 export default function Navbar() {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border">
@@ -43,12 +45,22 @@ export default function Navbar() {
               <span className="hidden sm:inline">{label}</span>
             </Link>
           ))}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="ml-1"
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
           {user && (
             <Button
               variant="ghost"
               size="sm"
               onClick={signOut}
-              className="ml-2 text-muted-foreground text-xs"
+              className="ml-1 text-muted-foreground text-xs"
             >
               Sign out
             </Button>
