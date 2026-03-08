@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Film, X, Star, ExternalLink, Play, Ticket } from "lucide-react";
+import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,7 @@ import { useTickets } from "@/hooks/useTickets";
 import { useNavigate } from "react-router-dom";
 import { ClapperboardIcon } from "@/components/icons/CinemaIcons";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 function getMoviePoster(movie: Movie): string {
@@ -18,6 +19,7 @@ function getMoviePoster(movie: Movie): string {
 export default function Movies() {
   const { movies, loading, addMovie } = useMovies();
   const { hasTicketForMovie } = useTickets();
+  const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "" });
   const [classifying, setClassifying] = useState(false);
@@ -202,32 +204,57 @@ export default function Movies() {
                     
                     <div className="flex gap-2 mt-4">
                       {hasTicket ? (
-                        movie.embed_url ? (
-                          <Button
-                            variant="ticket"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() =>
-                              navigate(
-                                `/watch?url=${encodeURIComponent(movie.embed_url!)}&title=${encodeURIComponent(movie.title)}${movie.total_seasons ? `&seasons=${movie.total_seasons}` : ""}`
-                              )
-                            }
-                          >
-                            <Play className="w-3 h-3 mr-1" />
-                            Watch Now
-                          </Button>
-                        ) : movie.watch_url ? (
-                          <a href={movie.watch_url} target="_blank" rel="noopener noreferrer" className="flex-1">
-                            <Button variant="ticket" size="sm" className="w-full">
-                              <ExternalLink className="w-3 h-3 mr-1" />
+                        <>
+                          {movie.embed_url ? (
+                            <Button
+                              variant="ticket"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() =>
+                                navigate(
+                                  `/watch?url=${encodeURIComponent(movie.embed_url!)}&title=${encodeURIComponent(movie.title)}${movie.total_seasons ? `&seasons=${movie.total_seasons}` : ""}`
+                                )
+                              }
+                            >
+                              <Play className="w-3 h-3 mr-1" />
                               Watch
                             </Button>
-                          </a>
-                        ) : (
-                          <Button variant="outline" size="sm" className="flex-1" disabled>
-                            <Star className="w-3 h-3 mr-1" /> Ticket Ready
-                          </Button>
-                        )
+                          ) : movie.watch_url ? (
+                            <a href={movie.watch_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                              <Button variant="ticket" size="sm" className="w-full">
+                                <ExternalLink className="w-3 h-3 mr-1" />
+                                Watch
+                              </Button>
+                            </a>
+                          ) : (
+                            <Button variant="outline" size="sm" className="flex-1" disabled>
+                              <Star className="w-3 h-3 mr-1" /> Ticket Ready
+                            </Button>
+                          )}
+                          {movie.embed_url && (
+                            <Button
+                              variant="warm"
+                              size="sm"
+                              onClick={async () => {
+                                if (!user) return;
+                                const { data } = await supabase
+                                  .from("watch_rooms")
+                                  .insert({
+                                    movie_id: movie.id,
+                                    movie_title: movie.title,
+                                    embed_url: movie.embed_url,
+                                    host_id: user.id,
+                                  })
+                                  .select()
+                                  .single();
+                                if (data) navigate(`/watch-together?room=${data.id}`);
+                              }}
+                            >
+                              <Users className="w-3 h-3 mr-1" />
+                              Together
+                            </Button>
+                          )}
+                        </>
                       ) : (
                         <Button
                           variant="warm"

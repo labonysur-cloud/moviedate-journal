@@ -164,6 +164,67 @@ export type Database = {
         }
         Relationships: []
       }
+      room_members: {
+        Row: {
+          id: string
+          joined_at: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "watch_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "watch_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_tickets: {
         Row: {
           created_at: string
@@ -233,6 +294,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tickets_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_rooms: {
+        Row: {
+          created_at: string
+          embed_url: string | null
+          host_id: string
+          id: string
+          invite_code: string
+          is_active: boolean
+          movie_id: string
+          movie_title: string
+        }
+        Insert: {
+          created_at?: string
+          embed_url?: string | null
+          host_id: string
+          id?: string
+          invite_code?: string
+          is_active?: boolean
+          movie_id: string
+          movie_title: string
+        }
+        Update: {
+          created_at?: string
+          embed_url?: string | null
+          host_id?: string
+          id?: string
+          invite_code?: string
+          is_active?: boolean
+          movie_id?: string
+          movie_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_rooms_movie_id_fkey"
             columns: ["movie_id"]
             isOneToOne: false
             referencedRelation: "movies"
