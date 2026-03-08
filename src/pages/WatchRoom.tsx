@@ -152,10 +152,30 @@ const EMOJI_LIST = [
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!newMsg.trim() || !roomId || !user) return;
-    await supabase.from("room_messages").insert({ room_id: roomId, user_id: user.id, content: newMsg.trim() });
+  const sendMessage = async (content?: string) => {
+    const msg = content || newMsg.trim();
+    if (!msg || !roomId || !user) return;
+    await supabase.from("room_messages").insert({ room_id: roomId, user_id: user.id, content: msg });
     setNewMsg("");
+    setShowEmoji(false);
+    setShowGif(false);
+  };
+
+  const searchGifs = async (query: string) => {
+    if (!query.trim()) { setGifs([]); return; }
+    setGifLoading(true);
+    try {
+      const res = await fetch(`https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&limit=12&media_filter=tinygif`);
+      const data = await res.json();
+      setGifs(data.results?.map((r: any) => r.media_formats?.tinygif?.url).filter(Boolean) || []);
+    } catch {
+      setGifs([]);
+    }
+    setGifLoading(false);
+  };
+
+  const sendGif = (url: string) => {
+    sendMessage(`[gif]${url}[/gif]`);
   };
 
   const copyInvite = () => {
