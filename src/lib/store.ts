@@ -69,6 +69,10 @@ export function getMovies(): Movie[] {
   return defaultMovies;
 }
 
+export function resetMovies(): void {
+  localStorage.removeItem(MOVIES_KEY);
+}
+
 export function addMovie(movie: Omit<Movie, "id">): Movie {
   const movies = getMovies();
   const newMovie = { ...movie, id: Date.now().toString() };
