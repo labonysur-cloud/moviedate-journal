@@ -155,7 +155,7 @@ export default function Movies() {
                         variant="ticket"
                         size="sm"
                         className="flex-1"
-                        onClick={() => navigate(`/watch?url=${encodeURIComponent(movie.embedUrl!)}&title=${encodeURIComponent(movie.title)}`)}
+                        onClick={() => navigate(`/watch?url=${encodeURIComponent(movie.embedUrl!)}&title=${encodeURIComponent(movie.title)}${movie.totalSeasons ? `&seasons=${movie.totalSeasons}` : ""}`)}
                       >
                         <Play className="w-3 h-3 mr-1" />
                         Watch Now
