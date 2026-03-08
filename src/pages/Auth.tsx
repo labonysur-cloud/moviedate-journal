@@ -167,7 +167,9 @@ export default function Auth() {
               Cozy Cinema
             </h1>
             <p className="text-muted-foreground text-xs sm:text-sm">
-              {isSignUp
+              {isForgot
+                ? "Enter your email and we'll send a reset link"
+                : isSignUp
                 ? "Create your account to start watching"
                 : "Welcome back, movie lover"}
             </p>
