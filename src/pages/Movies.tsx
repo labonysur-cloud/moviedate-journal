@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Film, X } from "lucide-react";
+import { Plus, Film, X, Star, ExternalLink, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +23,7 @@ function getMoviePoster(movie: Movie): string {
 export default function Movies() {
   const [movies, setMovies] = useState<Movie[]>(getMovies);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", addedBy: "" });
+  const [form, setForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", addedBy: "", watchUrl: "" });
   const navigate = useNavigate();
 
   const handleAdd = () => {
@@ -33,7 +33,7 @@ export default function Movies() {
       poster: form.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop",
     });
     setMovies((prev) => [...prev, movie]);
-    setForm({ title: "", genre: "", year: "", description: "", poster: "", addedBy: "" });
+    setForm({ title: "", genre: "", year: "", description: "", poster: "", addedBy: "", watchUrl: "" });
     setShowForm(false);
   };
 
@@ -85,6 +85,11 @@ export default function Movies() {
                   onChange={(e) => setForm({ ...form, poster: e.target.value })}
                 />
                 <Input
+                  placeholder="MovieBox or watch URL (optional)"
+                  value={form.watchUrl}
+                  onChange={(e) => setForm({ ...form, watchUrl: e.target.value })}
+                />
+                <Input
                   placeholder="Added by"
                   value={form.addedBy}
                   onChange={(e) => setForm({ ...form, addedBy: e.target.value })}
@@ -111,8 +116,7 @@ export default function Movies() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="group cursor-pointer"
-              onClick={() => navigate(`/tickets?movie=${encodeURIComponent(movie.title)}`)}
+              className="group"
             >
               <div className="bg-card rounded-2xl border border-border overflow-hidden hover:border-accent hover:shadow-lg transition-all">
                 <div className="aspect-[2/3] relative overflow-hidden">
@@ -122,7 +126,16 @@ export default function Movies() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
+                  
+                  {/* Rating badge */}
+                  {movie.rating && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-card/80 backdrop-blur-sm px-2 py-1 rounded-full">
+                      <Star className="w-3 h-3 text-accent fill-accent" />
+                      <span className="text-xs font-bold text-foreground">{movie.rating}</span>
+                    </div>
+                  )}
+
+                  <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                     <span className="text-xs bg-accent/90 text-accent-foreground px-2 py-1 rounded-full font-medium">
                       {movie.genre}
                     </span>
@@ -132,8 +145,33 @@ export default function Movies() {
                   <h3 className="font-display text-lg font-semibold text-foreground">{movie.title}</h3>
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{movie.description}</p>
                   <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                    <span>{movie.year}</span>
-                    <span>Added by {movie.addedBy}</span>
+                    <span>{movie.year} · Added by {movie.addedBy}</span>
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex gap-2 mt-4">
+                    {movie.watchUrl && (
+                      <a
+                        href={movie.watchUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button variant="ticket" size="sm" className="w-full">
+                          <Play className="w-3 h-3 mr-1" />
+                          Watch on MovieBox
+                        </Button>
+                      </a>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => navigate(`/tickets?movie=${encodeURIComponent(movie.title)}`)}
+                    >
+                      Get Ticket
+                    </Button>
                   </div>
                 </div>
               </div>
