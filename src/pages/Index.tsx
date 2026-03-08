@@ -228,6 +228,59 @@ export default function Index() {
         </section>
       )}
 
+      {/* Active Watch Rooms */}
+      {activeRooms.length > 0 && (
+        <section className="py-20 px-4">
+          <div className="container mx-auto max-w-5xl">
+            <motion.h2
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-3xl sm:text-4xl font-display font-bold text-center mb-4 text-foreground"
+            >
+              Live Now <Radio className="inline w-6 h-6 text-primary animate-pulse" />
+            </motion.h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
+              Friends are watching — jump in and join them!
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeRooms.map((room, i) => (
+                <motion.div
+                  key={room.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Link
+                    to={`/watch-together?invite=${room.invite_code}`}
+                    className="block group bg-card rounded-2xl p-5 border border-border hover:border-primary hover:shadow-lg transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="font-display text-lg font-semibold text-foreground truncate flex-1 min-w-0">
+                        {room.movie_title}
+                      </h3>
+                      <Badge variant="secondary" className="ml-2 shrink-0">
+                        <Users className="w-3 h-3 mr-1" />
+                        {room.memberCount}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-sm text-muted-foreground">Watching now</span>
+                    </div>
+                    <div className="mt-3 flex items-center gap-1 text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Play className="w-4 h-4" />
+                      Join room
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <footer className="border-t border-border py-8 text-center text-muted-foreground text-sm">
         <p>Made with <Heart className="w-3 h-3 inline text-primary" /> for movie nights with friends</p>
       </footer>
