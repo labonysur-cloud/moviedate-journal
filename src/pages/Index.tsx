@@ -142,8 +142,73 @@ export default function Index() {
           </div>
         </div>
       </section>
+      {/* Watch Now */}
+      {movies.length > 0 && (
+        <section className="py-20 px-4 bg-secondary/30">
+          <div className="container mx-auto max-w-5xl">
+            <motion.h2
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-3xl sm:text-4xl font-display font-bold text-center mb-4 text-foreground"
+            >
+              Watch Now 🎬
+            </motion.h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
+              Jump right into your favorite movies and shows
+            </p>
 
-      {/* Footer */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {movies.map((movie, i) => (
+                <motion.div
+                  key={movie.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="group cursor-pointer"
+                  onClick={() =>
+                    navigate(
+                      `/watch?url=${encodeURIComponent(movie.embedUrl!)}&title=${encodeURIComponent(movie.title)}${movie.totalSeasons ? `&seasons=${movie.totalSeasons}` : ""}`
+                    )
+                  }
+                >
+                  <div className="relative rounded-2xl overflow-hidden border border-border hover:border-accent hover:shadow-lg transition-all">
+                    <div className="aspect-[2/3] relative">
+                      <img
+                        src={getMoviePoster(movie)}
+                        alt={movie.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+
+                      {/* Play overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-16 h-16 rounded-full bg-accent/90 flex items-center justify-center shadow-lg">
+                          <Play className="w-7 h-7 text-accent-foreground fill-accent-foreground ml-1" />
+                        </div>
+                      </div>
+
+                      {movie.rating && (
+                        <div className="absolute top-3 right-3 flex items-center gap-1 bg-card/80 backdrop-blur-sm px-2 py-1 rounded-full">
+                          <Star className="w-3 h-3 text-accent fill-accent" />
+                          <span className="text-xs font-bold text-foreground">{movie.rating}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 className="font-display text-lg font-semibold text-foreground">{movie.title}</h3>
+                      <p className="text-xs text-muted-foreground">{movie.genre} · {movie.year}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+
       <footer className="border-t border-border py-8 text-center text-muted-foreground text-sm">
         <p>Made with <Heart className="w-3 h-3 inline text-primary" /> for movie nights with friends</p>
       </footer>
