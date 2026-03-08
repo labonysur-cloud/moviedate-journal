@@ -1,6 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { Film, Ticket, BookHeart, Home, Sparkles } from "lucide-react";
+import { Film, Ticket, BookHeart, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { StarBurstIcon } from "@/components/icons/CinemaIcons";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
@@ -11,12 +14,13 @@ const links = [
 
 export default function Navbar() {
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2 group">
-          <Sparkles className="w-5 h-5 text-accent group-hover:animate-spin" />
+          <StarBurstIcon className="w-5 h-5" />
           <span className="font-display text-xl font-bold text-foreground">
             Cozy Cinema
           </span>
@@ -37,6 +41,16 @@ export default function Navbar() {
               <span className="hidden sm:inline">{label}</span>
             </Link>
           ))}
+          {user && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={signOut}
+              className="ml-2 text-muted-foreground text-xs"
+            >
+              Sign out
+            </Button>
+          )}
         </div>
       </div>
     </nav>
