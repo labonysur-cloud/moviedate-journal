@@ -59,6 +59,39 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_entries: {
+        Row: {
+          author: string | null
+          content: string
+          created_at: string
+          date: string
+          id: string
+          mood: string | null
+          movie_title: string
+          user_id: string
+        }
+        Insert: {
+          author?: string | null
+          content: string
+          created_at?: string
+          date: string
+          id?: string
+          mood?: string | null
+          movie_title: string
+          user_id: string
+        }
+        Update: {
+          author?: string | null
+          content?: string
+          created_at?: string
+          date?: string
+          id?: string
+          mood?: string | null
+          movie_title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       movies: {
         Row: {
           added_by: string
