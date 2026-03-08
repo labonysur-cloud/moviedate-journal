@@ -1,8 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Film, Ticket, BookHeart, Popcorn, Heart } from "lucide-react";
+import { Film, Ticket, BookHeart, Popcorn, Heart, Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getMovies, type Movie } from "@/lib/store";
 import heroCinema from "@/assets/hero-cinema.jpg";
+import posterGilmoreGirls from "@/assets/poster-gilmore-girls.jpg";
+import posterStrangerThings from "@/assets/poster-stranger-things.jpg";
+import posterMeanGirls from "@/assets/poster-mean-girls.jpg";
+
+const posterMap: Record<string, string> = {
+  "Gilmore Girls": posterGilmoreGirls,
+  "Stranger Things": posterStrangerThings,
+  "Mean Girls": posterMeanGirls,
+};
+
+function getMoviePoster(movie: Movie): string {
+  return posterMap[movie.title] || movie.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop";
+}
 
 const features = [
   {
