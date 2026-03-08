@@ -6,6 +6,8 @@ export interface Movie {
   poster: string;
   description: string;
   addedBy: string;
+  rating?: string;
+  watchUrl?: string;
 }
 
 export interface Ticket {
@@ -39,17 +41,21 @@ const defaultMovies: Movie[] = [
     genre: "Comedy / Drama",
     year: "2000",
     poster: "",
-    description: "A heartwarming story about a mother-daughter duo navigating life, love, and lots of coffee in Stars Hollow.",
+    description: "A dramedy centering around the relationship between a thirtysomething single mother and her teen daughter living in Stars Hollow, Connecticut.",
     addedBy: "You",
+    rating: "8.2",
+    watchUrl: "https://moviebox.ph/detail/gilmore-girls-cCOciFua797?id=5998494678717452072&scene=&season=1&page_from=search_detail&type=/movie/detail",
   },
   {
     id: "2",
     title: "Stranger Things",
-    genre: "Sci-Fi / Horror",
+    genre: "Sci-Fi / Drama",
     year: "2016",
     poster: "",
-    description: "A group of kids uncover supernatural mysteries in their small town of Hawkins, Indiana.",
+    description: "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.",
     addedBy: "You",
+    rating: "8.7",
+    watchUrl: "https://moviebox.ph/detail/stranger-things-cCOciFua797?id=5997883574990675144&scene=&season=1&page_from=search_detail&type=/movie/detail",
   },
   {
     id: "3",
@@ -57,8 +63,10 @@ const defaultMovies: Movie[] = [
     genre: "Comedy",
     year: "2004",
     poster: "",
-    description: "A homeschooled teen navigates the jungle of high school cliques and discovers the true meaning of friendship.",
+    description: "Cady Heron is a hit with The Plastics, the A-list girl clique at her new school, until she makes the mistake of falling for Aaron Samuels, the ex-boyfriend of alpha Plastic Regina George.",
     addedBy: "You",
+    rating: "7.1",
+    watchUrl: "https://moviebox.ph/detail/mean-girls-cCOciFua797?id=5998024665060044672&scene=&page_from=search_detail&type=/movie/detail",
   },
 ];
 
