@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users } from "lucide-react";
+import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users, Sparkles, Wand2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,37 +16,90 @@ function getMoviePoster(movie: Movie): string {
   return movie.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop";
 }
 
+const moodOptions = [
+  { label: "😂 Something funny", value: "comedy, lighthearted, fun" },
+  { label: "😭 Make me cry", value: "emotional, drama, tearjerker" },
+  { label: "🍿 Action-packed", value: "action, thriller, exciting" },
+  { label: "🥰 Romantic", value: "romance, love story, heartwarming" },
+  { label: "🤯 Mind-bending", value: "sci-fi, thriller, mind-bending" },
+  { label: "😴 Cozy vibes", value: "cozy, feel-good, comfort movie" },
+];
+
+interface Recommendation {
+  title: string;
+  genre: string;
+  year: string;
+  description: string;
+  rating: string;
+  emoji: string;
+}
+
 export default function Movies() {
   const { movies, loading, addMovie } = useMovies();
   const { hasTicketForMovie } = useTickets();
   const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "" });
-  const [classifying, setClassifying] = useState(false);
+  const [autofilling, setAutofilling] = useState(false);
+  const [showRecs, setShowRecs] = useState(false);
+  const [recs, setRecs] = useState<Recommendation[]>([]);
+  const [recsLoading, setRecsLoading] = useState(false);
+  const [addingRec, setAddingRec] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleAutoClassify = async () => {
+  const handleAutoFill = async () => {
     if (!form.title) return;
-    setClassifying(true);
+    setAutofilling(true);
     try {
-      const { data } = await supabase.functions.invoke("generate-ticket", {
-        body: {
-          title: form.title,
-          genre: form.genre,
-          year: form.year,
-          description: form.description,
-          type: "classify",
-        },
+      const { data, error } = await supabase.functions.invoke("movie-ai", {
+        body: { action: "autofill", title: form.title },
       });
-      if (data?.category) {
-        setForm((prev) => ({ ...prev, genre: data.category }));
-        toast({ title: `${data.emoji || "🎬"} Classified!`, description: `Category: ${data.category}` });
-      }
-    } catch {
-      toast({ title: "Couldn't classify", description: "Enter genre manually", variant: "destructive" });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setForm((prev) => ({
+        ...prev,
+        title: data.title || prev.title,
+        genre: data.genre || prev.genre,
+        year: data.year || prev.year,
+        description: data.description || prev.description,
+        rating: data.rating || prev.rating,
+        poster: data.poster || prev.poster,
+      }));
+      toast({ title: "✨ Auto-filled!", description: `Found details for "${data.title || form.title}"` });
+    } catch (err: any) {
+      toast({ title: "Couldn't auto-fill", description: err.message || "Try entering details manually", variant: "destructive" });
     }
-    setClassifying(false);
+    setAutofilling(false);
+  };
+
+  const handleGetRecs = async (mood: string) => {
+    setRecsLoading(true);
+    setRecs([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("movie-ai", {
+        body: { action: "recommend", mood, movies: movies.slice(0, 20) },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setRecs(data.recommendations || []);
+    } catch (err: any) {
+      toast({ title: "Couldn't get recommendations", description: err.message, variant: "destructive" });
+    }
+    setRecsLoading(false);
+  };
+
+  const handleAddRec = async (rec: Recommendation) => {
+    setAddingRec(rec.title);
+    await addMovie({
+      title: rec.title,
+      genre: rec.genre,
+      year: rec.year,
+      description: rec.description,
+      rating: rec.rating,
+    });
+    toast({ title: `${rec.emoji} Added!`, description: `"${rec.title}" added to your collection` });
+    setAddingRec(null);
   };
 
   const handleAdd = async () => {
@@ -76,16 +129,91 @@ export default function Movies() {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-6xl">
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-10">
           <div>
             <h1 className="text-4xl font-display font-bold text-foreground">Our Movies</h1>
             <p className="text-muted-foreground mt-1">The collection we're building together 🍿</p>
           </div>
-          <Button variant="warm" onClick={() => setShowForm(!showForm)}>
-            {showForm ? <X className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
-            {showForm ? "Cancel" : "Add Movie"}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => { setShowRecs(!showRecs); setShowForm(false); }}>
+              <Sparkles className="w-4 h-4 mr-1" />
+              {showRecs ? "Hide" : "AI Suggest"}
+            </Button>
+            <Button variant="warm" onClick={() => { setShowForm(!showForm); setShowRecs(false); }}>
+              {showForm ? <X className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
+              {showForm ? "Cancel" : "Add Movie"}
+            </Button>
+          </div>
         </div>
+
+        {/* AI Recommendations */}
+        <AnimatePresence>
+          {showRecs && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-10"
+            >
+              <div className="bg-card rounded-2xl p-6 border border-border">
+                <h3 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  What are you in the mood for?
+                </h3>
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {moodOptions.map((mood) => (
+                    <button
+                      key={mood.value}
+                      onClick={() => handleGetRecs(mood.value)}
+                      disabled={recsLoading}
+                      className="text-sm px-4 py-2 rounded-full border border-border bg-secondary hover:bg-accent hover:text-accent-foreground transition-all disabled:opacity-50"
+                    >
+                      {mood.label}
+                    </button>
+                  ))}
+                </div>
+
+                {recsLoading && (
+                  <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Finding movies for you...</span>
+                  </div>
+                )}
+
+                {recs.length > 0 && (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {recs.map((rec) => (
+                      <div key={rec.title} className="bg-secondary/50 rounded-xl p-4 border border-border">
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-display font-semibold text-foreground">
+                            {rec.emoji} {rec.title}
+                          </h4>
+                          <span className="text-xs text-muted-foreground">{rec.year}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-1">{rec.genre} · ⭐ {rec.rating}</p>
+                        <p className="text-sm text-foreground/80 mb-3">{rec.description}</p>
+                        <Button
+                          variant="warm"
+                          size="sm"
+                          className="w-full"
+                          disabled={addingRec === rec.title}
+                          onClick={() => handleAddRec(rec)}
+                        >
+                          {addingRec === rec.title ? (
+                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                          ) : (
+                            <Plus className="w-3 h-3 mr-1" />
+                          )}
+                          Add to Collection
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Add Movie Form */}
         <AnimatePresence>
@@ -98,45 +226,51 @@ export default function Movies() {
             >
               <div className="bg-card rounded-2xl p-6 border border-border space-y-4 max-w-lg">
                 <h3 className="font-display text-lg font-semibold text-foreground">Add a new movie</h3>
-                <Input
-                  placeholder="Movie title"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                />
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Genre"
-                    value={form.genre}
-                    onChange={(e) => setForm({ ...form, genre: e.target.value })}
+                    placeholder="Movie or show title"
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
                     className="flex-1"
                   />
                   <Button
                     variant="outline"
-                    size="sm"
-                    onClick={handleAutoClassify}
-                    disabled={classifying || !form.title}
-                    className="text-xs whitespace-nowrap"
+                    onClick={handleAutoFill}
+                    disabled={autofilling || !form.title}
+                    className="whitespace-nowrap"
                   >
-                    {classifying ? "🤖 ..." : "🤖 Auto-classify"}
+                    {autofilling ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-4 h-4 mr-1" />
+                    )}
+                    Auto-fill
                   </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    placeholder="Genre"
+                    value={form.genre}
+                    onChange={(e) => setForm({ ...form, genre: e.target.value })}
+                  />
                   <Input
                     placeholder="Year"
                     value={form.year}
                     onChange={(e) => setForm({ ...form, year: e.target.value })}
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <Input
                     placeholder="Rating (e.g. 8.5)"
                     value={form.rating}
                     onChange={(e) => setForm({ ...form, rating: e.target.value })}
                   />
+                  <Input
+                    placeholder="Poster image URL"
+                    value={form.poster}
+                    onChange={(e) => setForm({ ...form, poster: e.target.value })}
+                  />
                 </div>
-                <Input
-                  placeholder="Poster image URL (optional)"
-                  value={form.poster}
-                  onChange={(e) => setForm({ ...form, poster: e.target.value })}
-                />
                 <Input
                   placeholder="Watch URL (optional)"
                   value={form.watchUrl}
