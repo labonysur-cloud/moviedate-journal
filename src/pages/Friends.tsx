@@ -7,6 +7,7 @@ import { useFriends } from "@/hooks/useFriends";
 import { useAuth } from "@/contexts/AuthContext";
 import { HeartSparkleIcon, StarBurstIcon } from "@/components/icons/CinemaIcons";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { FriendsSkeleton } from "@/components/PageSkeleton";
 
 export default function Friends() {
   const { friends, requests, myLink, loading, generateShareLink, addFriendByCode, acceptRequest, declineRequest } = useFriends();
@@ -32,7 +33,6 @@ export default function Friends() {
   const handleAddFriend = async () => {
     if (!friendCode.trim()) return;
     setAdding(true);
-    // Extract code from URL or use raw code
     const code = friendCode.includes("code=")
       ? new URL(friendCode).searchParams.get("code") || friendCode
       : friendCode.trim();
@@ -49,23 +49,30 @@ export default function Friends() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <HeartSparkleIcon className="w-12 h-12 animate-pulse" />
+      <div className="min-h-screen py-8 sm:py-12 px-4">
+        <div className="container mx-auto max-w-2xl">
+          <h1 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-2 flex items-center gap-3">
+            <Users className="w-7 sm:w-8 h-7 sm:h-8 text-primary" />
+            Friends
+          </h1>
+          <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Your movie night crew 💕</p>
+          <FriendsSkeleton />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-12 px-4">
+    <div className="min-h-screen py-8 sm:py-12 px-4">
       <div className="container mx-auto max-w-2xl">
-        <h1 className="text-4xl font-display font-bold text-foreground mb-2 flex items-center gap-3">
-          <Users className="w-8 h-8 text-primary" />
+        <h1 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-2 flex items-center gap-3">
+          <Users className="w-7 sm:w-8 h-7 sm:h-8 text-primary" />
           Friends
         </h1>
-        <p className="text-muted-foreground mb-10">Your movie night crew 💕</p>
+        <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Your movie night crew 💕</p>
 
         {/* Share Link Section */}
-        <div className="bg-card rounded-2xl p-6 border border-border mb-6">
+        <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border mb-4 sm:mb-6">
           <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <Link2 className="w-5 h-5 text-accent" />
             Invite Friends
@@ -73,7 +80,7 @@ export default function Friends() {
           <p className="text-sm text-muted-foreground mb-4">
             Generate a link and share it with your friends to connect!
           </p>
-          <Button variant="warm" onClick={handleGenerateLink} className="w-full sm:w-auto">
+          <Button variant="warm" size="sm" onClick={handleGenerateLink} className="w-full sm:w-auto">
             {copied ? (
               <>
                 <Check className="w-4 h-4 mr-1" /> Link Copied!
@@ -92,7 +99,7 @@ export default function Friends() {
         </div>
 
         {/* Add by Code */}
-        <div className="bg-card rounded-2xl p-6 border border-border mb-6">
+        <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border mb-4 sm:mb-6">
           <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-accent" />
             Add by Code or Link
@@ -104,7 +111,7 @@ export default function Friends() {
               onChange={(e) => setFriendCode(e.target.value)}
               className="flex-1"
             />
-            <Button variant="ticket" onClick={handleAddFriend} disabled={adding || !friendCode.trim()}>
+            <Button variant="ticket" size="sm" onClick={handleAddFriend} disabled={adding || !friendCode.trim()}>
               {adding ? "Adding..." : "Add"}
             </Button>
           </div>
@@ -117,7 +124,7 @@ export default function Friends() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-card rounded-2xl p-6 border border-accent/30 mb-6"
+              className="bg-card rounded-2xl p-4 sm:p-6 border border-accent/30 mb-4 sm:mb-6"
             >
               <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Mail className="w-5 h-5 text-accent" />
@@ -125,18 +132,18 @@ export default function Friends() {
               </h3>
               <div className="space-y-3">
                 {pendingRequests.map((req) => (
-                  <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-8 h-8">
+                  <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar className="w-8 h-8 shrink-0">
                         <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                           {req.from_profile?.display_name?.charAt(0) || "?"}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium text-foreground text-sm">
+                      <span className="font-medium text-foreground text-sm truncate">
                         {req.from_profile?.display_name || "Someone"}
                       </span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 shrink-0">
                       <Button size="sm" variant="warm" onClick={() => acceptRequest(req.id)}>
                         Accept
                       </Button>
@@ -152,7 +159,7 @@ export default function Friends() {
         </AnimatePresence>
 
         {/* Friends List */}
-        <div className="bg-card rounded-2xl p-6 border border-border">
+        <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border">
           <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-primary" />
             My Friends ({friends.length})
@@ -171,16 +178,16 @@ export default function Friends() {
                   animate={{ opacity: 1, x: 0 }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/50 transition-colors"
                 >
-                  <Avatar className="w-10 h-10">
+                  <Avatar className="w-10 h-10 shrink-0">
                     <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                       {friend.display_name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-semibold text-foreground text-sm">{friend.display_name}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-foreground text-sm truncate">{friend.display_name}</p>
                     <p className="text-xs text-muted-foreground">Movie buddy 🍿</p>
                   </div>
-                  <StarBurstIcon className="w-4 h-4 text-accent ml-auto" />
+                  <StarBurstIcon className="w-4 h-4 text-accent ml-auto shrink-0" />
                 </motion.div>
               ))}
             </div>

@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { ProfileSkeleton } from "@/components/PageSkeleton";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -81,19 +82,25 @@ export default function Profile() {
     setSaving(false);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen py-8 sm:py-12 px-4">
+        <ProfileSkeleton />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen py-12 px-4">
+    <div className="min-h-screen py-8 sm:py-12 px-4">
       <div className="container mx-auto max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card rounded-2xl p-8 border border-border space-y-8"
+          className="bg-card rounded-2xl p-6 sm:p-8 border border-border space-y-6 sm:space-y-8"
         >
           <div className="text-center">
-            <h1 className="text-3xl font-display font-bold text-foreground flex items-center justify-center gap-2">
-              <User className="w-7 h-7 text-primary" />
+            <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground flex items-center justify-center gap-2">
+              <User className="w-6 sm:w-7 h-6 sm:h-7 text-primary" />
               Your Profile
             </h1>
             <p className="text-muted-foreground text-sm mt-1">Customize your cinema identity ✨</p>
@@ -105,17 +112,17 @@ export default function Profile() {
               className="relative group cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Avatar className="w-24 h-24 border-2 border-border">
+              <Avatar className="w-20 sm:w-24 h-20 sm:h-24 border-2 border-border">
                 <AvatarImage src={avatarUrl || undefined} />
-                <AvatarFallback className="bg-muted text-muted-foreground text-2xl">
+                <AvatarFallback className="bg-muted text-muted-foreground text-xl sm:text-2xl">
                   {displayName?.[0]?.toUpperCase() || "?"}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 {uploading ? (
-                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  <Loader2 className="w-6 h-6 text-background animate-spin" />
                 ) : (
-                  <Camera className="w-6 h-6 text-white" />
+                  <Camera className="w-6 h-6 text-background" />
                 )}
               </div>
             </div>

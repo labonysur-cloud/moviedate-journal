@@ -11,6 +11,8 @@ import ShareTicketDialog from "@/components/ShareTicketDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { ClapperboardIcon, PopcornIcon } from "@/components/icons/CinemaIcons";
 import { useSearchParams } from "react-router-dom";
+import { TicketGridSkeleton } from "@/components/PageSkeleton";
+import EmptyState from "@/components/EmptyState";
 
 type BookingStep = "movie" | "seat" | "generating" | "done";
 
@@ -27,11 +29,9 @@ export default function Tickets() {
   const [aiData, setAiData] = useState<any>(null);
   const [newTicket, setNewTicket] = useState<TicketDisplayData | null>(null);
 
-  // Share dialog state
   const [shareTicketId, setShareTicketId] = useState<string | null>(null);
   const [shareMovieTitle, setShareMovieTitle] = useState("");
 
-  // Shared tickets received
   const [sharedTickets, setSharedTickets] = useState<TicketDisplayData[]>([]);
 
   useEffect(() => {
@@ -41,7 +41,6 @@ export default function Tickets() {
     }
   }, [preselectedMovieTitle, movies]);
 
-  // Fetch shared tickets
   useEffect(() => {
     if (!user) return;
     const fetchShared = async () => {
@@ -178,35 +177,29 @@ export default function Tickets() {
     };
   });
 
-  if (moviesLoading || ticketsLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <ClapperboardIcon className="w-12 h-12 animate-pulse" />
-      </div>
-    );
-  }
+  const isLoading = moviesLoading || ticketsLoading;
 
   return (
-    <div className="min-h-screen py-12 px-4">
+    <div className="min-h-screen py-8 sm:py-12 px-4">
       <div className="container mx-auto max-w-4xl">
-        <h1 className="text-4xl font-display font-bold text-foreground mb-2">Movie Tickets</h1>
-        <p className="text-muted-foreground mb-10">Grab your ticket before the show starts! 🎫</p>
+        <h1 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-2">Movie Tickets</h1>
+        <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Grab your ticket before the show starts! 🎫</p>
 
         {/* Booking Flow */}
         <AnimatePresence mode="wait">
-          {step === "movie" && (
+          {step === "movie" && !isLoading && (
             <motion.div
               key="movie"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="bg-card rounded-2xl p-6 border border-border mb-10"
+              className="bg-card rounded-2xl p-4 sm:p-6 border border-border mb-8 sm:mb-10"
             >
               <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-accent" />
                 Step 1: Choose Your Movie
               </h3>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {movies.map((movie) => {
                   const alreadyHasTicket = hasTicketForMovie(movie.id);
                   return (
@@ -214,7 +207,7 @@ export default function Tickets() {
                       key={movie.id}
                       onClick={() => !alreadyHasTicket && setSelectedMovieId(movie.id)}
                       disabled={alreadyHasTicket}
-                      className={`relative text-left p-3 rounded-xl border-2 transition-all ${
+                      className={`relative text-left p-2 sm:p-3 rounded-xl border-2 transition-all ${
                         selectedMovieId === movie.id
                           ? "border-accent bg-accent/10 shadow-md"
                           : alreadyHasTicket
@@ -222,21 +215,21 @@ export default function Tickets() {
                           : "border-border hover:border-accent/50 bg-card"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3">
                         {movie.poster ? (
-                          <img src={movie.poster} alt={movie.title} className="w-10 h-14 rounded object-cover" />
+                          <img src={movie.poster} alt={movie.title} className="w-8 sm:w-10 h-12 sm:h-14 rounded object-cover shrink-0" loading="lazy" />
                         ) : (
-                          <div className="w-10 h-14 rounded bg-secondary flex items-center justify-center">
-                            <Film className="w-5 h-5 text-muted-foreground" />
+                          <div className="w-8 sm:w-10 h-12 sm:h-14 rounded bg-secondary flex items-center justify-center shrink-0">
+                            <Film className="w-4 sm:w-5 h-4 sm:h-5 text-muted-foreground" />
                           </div>
                         )}
-                        <div>
-                          <p className="font-display font-semibold text-foreground text-sm">{movie.title}</p>
-                          <p className="text-xs text-muted-foreground">{movie.genre} · {movie.year}</p>
+                        <div className="min-w-0">
+                          <p className="font-display font-semibold text-foreground text-xs sm:text-sm truncate">{movie.title}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">{movie.genre} · {movie.year}</p>
                         </div>
                       </div>
                       {alreadyHasTicket && (
-                        <span className="absolute top-1 right-1 text-[9px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded-full font-bold">
+                        <span className="absolute top-1 right-1 text-[8px] sm:text-[9px] bg-accent text-accent-foreground px-1 sm:px-1.5 py-0.5 rounded-full font-bold">
                           ✓ Got ticket
                         </span>
                       )}
@@ -260,18 +253,18 @@ export default function Tickets() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="bg-card rounded-2xl p-6 border border-border mb-10"
+              className="bg-card rounded-2xl p-4 sm:p-6 border border-border mb-8 sm:mb-10"
             >
               <h3 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
                 <PopcornIcon className="w-5 h-5" />
                 Step 2: Pick Your Seat
               </h3>
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className="text-sm text-muted-foreground mb-4 sm:mb-6">
                 Watching: <span className="font-semibold text-foreground">{selectedMovie?.title}</span>
               </p>
               <SeatPicker selectedSeat={selectedSeat} onSelect={setSelectedSeat} />
               {selectedSeat && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 flex gap-3">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 sm:mt-6 flex gap-3">
                   <Button variant="outline" onClick={() => setStep("movie")}>Back</Button>
                   <Button variant="warm" onClick={handleBook} className="flex-1 sm:flex-none">
                     <TicketIcon className="w-4 h-4 mr-1" />
@@ -287,12 +280,12 @@ export default function Tickets() {
               key="generating"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-card rounded-2xl p-12 border border-border mb-10 text-center"
+              className="bg-card rounded-2xl p-8 sm:p-12 border border-border mb-8 sm:mb-10 text-center"
             >
               <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}>
-                <ClapperboardIcon className="w-16 h-16 mx-auto" />
+                <ClapperboardIcon className="w-12 sm:w-16 h-12 sm:h-16 mx-auto" />
               </motion.div>
-              <p className="font-display text-xl font-semibold text-foreground mt-4">Creating your magical ticket...</p>
+              <p className="font-display text-lg sm:text-xl font-semibold text-foreground mt-4">Creating your magical ticket...</p>
               <p className="text-sm text-muted-foreground mt-2">Our AI is crafting something special ✨</p>
             </motion.div>
           )}
@@ -303,7 +296,7 @@ export default function Tickets() {
               initial={{ opacity: 0, y: 20, rotateX: -10 }}
               animate={{ opacity: 1, y: 0, rotateX: 0 }}
               transition={{ type: "spring", stiffness: 150, damping: 20 }}
-              className="mb-10 max-w-md mx-auto"
+              className="mb-8 sm:mb-10 max-w-md mx-auto"
             >
               <TicketCard
                 ticket={newTicket}
@@ -319,14 +312,21 @@ export default function Tickets() {
           )}
         </AnimatePresence>
 
+        {/* Loading state */}
+        {isLoading && (
+          <div className="mb-10">
+            <TicketGridSkeleton count={4} />
+          </div>
+        )}
+
         {/* Shared tickets received */}
-        {sharedTickets.length > 0 && step !== "done" && (
+        {!isLoading && sharedTickets.length > 0 && step !== "done" && (
           <>
-            <h2 className="font-display text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <Gift className="w-6 h-6 text-primary" />
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+              <Gift className="w-5 sm:w-6 h-5 sm:h-6 text-primary" />
               Tickets From Friends
             </h2>
-            <div className="grid sm:grid-cols-2 gap-6 mb-10">
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-10">
               {sharedTickets.map((ticket, i) => (
                 <motion.div
                   key={`shared-${ticket.id}`}
@@ -342,13 +342,13 @@ export default function Tickets() {
         )}
 
         {/* All Tickets Collection */}
-        {ticketDisplayData.length > 0 && step !== "done" && (
+        {!isLoading && ticketDisplayData.length > 0 && step !== "done" && (
           <>
-            <h2 className="font-display text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <TicketIcon className="w-6 h-6 text-accent" />
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+              <TicketIcon className="w-5 sm:w-6 h-5 sm:h-6 text-accent" />
               Your Ticket Collection
             </h2>
-            <div className="grid sm:grid-cols-2 gap-6">
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               {ticketDisplayData
                 .filter((t) => t.id !== newTicket?.id)
                 .map((ticket, i) => (
@@ -369,16 +369,15 @@ export default function Tickets() {
           </>
         )}
 
-        {ticketDisplayData.length === 0 && step === "movie" && (
-          <div className="text-center py-12">
-            <TicketIcon className="w-16 h-16 text-muted-foreground/20 mx-auto mb-4" />
-            <p className="text-muted-foreground font-display text-lg">No tickets yet...</p>
-            <p className="text-sm text-muted-foreground mt-1">Pick a movie above to get your first ticket! 🎬</p>
-          </div>
+        {!isLoading && ticketDisplayData.length === 0 && step === "movie" && (
+          <EmptyState
+            icon={TicketIcon}
+            title="No tickets yet..."
+            description="Pick a movie above to get your first ticket! 🎬"
+          />
         )}
       </div>
 
-      {/* Share Dialog */}
       <ShareTicketDialog
         ticketId={shareTicketId || ""}
         movieTitle={shareMovieTitle}

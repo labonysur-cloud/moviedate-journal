@@ -7,6 +7,7 @@ import { useTickets } from "@/hooks/useTickets";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import heroCinema from "@/assets/hero-cinema.jpg";
 
 function getMoviePoster(movie: Movie): string {
@@ -42,11 +43,12 @@ const features = [
 
 export default function Index() {
   const navigate = useNavigate();
-  const { movies } = useMovies();
-  const { hasTicketForMovie } = useTickets();
+  const { movies, loading: moviesLoading } = useMovies();
+  const { hasTicketForMovie, loading: ticketsLoading } = useTickets();
   const watchableMovies = movies.filter((m) => m.embed_url && hasTicketForMovie(m.id));
 
   const [activeRooms, setActiveRooms] = useState<any[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(true);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -57,7 +59,6 @@ export default function Index() {
         .order("created_at", { ascending: false })
         .limit(6);
       if (data && data.length > 0) {
-        // Fetch member counts
         const roomIds = data.map((r) => r.id);
         const { data: members } = await supabase
           .from("room_members")
@@ -69,16 +70,23 @@ export default function Index() {
         });
         setActiveRooms(data.map((r) => ({ ...r, memberCount: counts[r.id] || 0 })));
       }
+      setRoomsLoading(false);
     };
     fetchRooms();
   }, []);
 
+  const dataLoading = moviesLoading || ticketsLoading;
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[70vh] sm:h-[85vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroCinema} alt="Cozy vintage cinema" className="w-full h-full object-cover" />
+          <img
+            src={heroCinema}
+            alt="Cozy vintage cinema interior with warm lighting"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
         </div>
 
@@ -92,23 +100,23 @@ export default function Index() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center gap-2 bg-card/80 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-border"
+            className="inline-flex items-center gap-2 bg-card/80 backdrop-blur-sm px-4 py-2 rounded-full mb-4 sm:mb-6 border border-border"
           >
             <Popcorn className="w-4 h-4 text-accent" />
             <span className="text-sm font-medium text-foreground">Your cozy movie corner</span>
           </motion.div>
 
-          <h1 className="text-5xl sm:text-7xl font-display font-bold mb-6 text-foreground leading-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold mb-4 sm:mb-6 text-foreground leading-tight">
             Watch Together,{" "}
             <span className="text-gradient-gold">Feel Together</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-xl mx-auto leading-relaxed">
             A cozy space for friends to share movie nights, collect tickets,
             and journal beautiful memories — no matter the distance.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Button variant="warm" size="lg" asChild>
               <Link to="/movies">
                 <Film className="w-4 h-4 mr-1" />
@@ -126,21 +134,21 @@ export default function Index() {
       </section>
 
       {/* Features */}
-      <section className="py-20 px-4">
+      <section className="py-12 sm:py-20 px-4">
         <div className="container mx-auto max-w-5xl">
           <motion.h2
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-display font-bold text-center mb-4 text-foreground"
+            className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-center mb-3 sm:mb-4 text-foreground"
           >
             How It Works
           </motion.h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
+          <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-md mx-auto text-sm sm:text-base">
             Four simple steps to the coziest movie night ever ✨
           </p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
@@ -151,13 +159,13 @@ export default function Index() {
               >
                 <Link
                   to={f.to}
-                  className="block group bg-card rounded-2xl p-6 border border-border hover:border-accent transition-all hover:shadow-lg h-full"
+                  className="block group bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-border hover:border-accent transition-all hover:shadow-lg h-full"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center mb-3 group-hover:bg-accent/20 transition-colors">
-                    <f.icon className="w-5 h-5 text-accent" />
+                  <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-accent/20 transition-colors">
+                    <f.icon className="w-4 sm:w-5 h-4 sm:h-5 text-accent" />
                   </div>
-                  <h3 className="font-display text-lg font-semibold mb-1.5 text-foreground">{f.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
+                  <h3 className="font-display text-sm sm:text-lg font-semibold mb-1 sm:mb-1.5 text-foreground">{f.title}</h3>
+                  <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed hidden sm:block">{f.desc}</p>
                 </Link>
               </motion.div>
             ))}
@@ -165,23 +173,35 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Watch Now - only movies with tickets */}
-      {watchableMovies.length > 0 && (
-        <section className="py-20 px-4 bg-secondary/30">
+      {/* Watch Now */}
+      {dataLoading ? (
+        <section className="py-12 sm:py-20 px-4 bg-secondary/30">
+          <div className="container mx-auto max-w-5xl">
+            <Skeleton className="h-10 w-48 mx-auto mb-4" />
+            <Skeleton className="h-5 w-64 mx-auto mb-12" />
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="aspect-[2/3] rounded-2xl" />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : watchableMovies.length > 0 ? (
+        <section className="py-12 sm:py-20 px-4 bg-secondary/30">
           <div className="container mx-auto max-w-5xl">
             <motion.h2
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-3xl sm:text-4xl font-display font-bold text-center mb-4 text-foreground"
+              className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-center mb-3 sm:mb-4 text-foreground"
             >
               Watch Now 🎬
             </motion.h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
+            <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-md mx-auto text-sm sm:text-base">
               Movies you have tickets for — jump right in!
             </p>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {watchableMovies.map((movie, i) => (
                 <motion.div
                   key={movie.id}
@@ -202,11 +222,12 @@ export default function Index() {
                         src={getMoviePoster(movie)}
                         alt={movie.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-16 h-16 rounded-full bg-accent/90 flex items-center justify-center shadow-lg">
-                          <Play className="w-7 h-7 text-accent-foreground fill-accent-foreground ml-1" />
+                        <div className="w-14 sm:w-16 h-14 sm:h-16 rounded-full bg-accent/90 flex items-center justify-center shadow-lg">
+                          <Play className="w-6 sm:w-7 h-6 sm:h-7 text-accent-foreground fill-accent-foreground ml-1" />
                         </div>
                       </div>
                       {movie.rating && (
@@ -216,8 +237,8 @@ export default function Index() {
                         </div>
                       )}
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="font-display text-lg font-semibold text-foreground">{movie.title}</h3>
+                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+                      <h3 className="font-display text-base sm:text-lg font-semibold text-foreground">{movie.title}</h3>
                       <p className="text-xs text-muted-foreground">{movie.genre} · {movie.year}</p>
                     </div>
                   </div>
@@ -226,24 +247,24 @@ export default function Index() {
             </div>
           </div>
         </section>
-      )}
+      ) : null}
 
       {/* Active Watch Rooms */}
-      {activeRooms.length > 0 && (
-        <section className="py-20 px-4">
+      {!roomsLoading && activeRooms.length > 0 && (
+        <section className="py-12 sm:py-20 px-4">
           <div className="container mx-auto max-w-5xl">
             <motion.h2
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-3xl sm:text-4xl font-display font-bold text-center mb-4 text-foreground"
+              className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-center mb-3 sm:mb-4 text-foreground"
             >
-              Live Now <Radio className="inline w-6 h-6 text-primary animate-pulse" />
+              Live Now <Radio className="inline w-5 sm:w-6 h-5 sm:h-6 text-primary animate-pulse" />
             </motion.h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-md mx-auto">
+            <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-md mx-auto text-sm sm:text-base">
               Friends are watching — jump in and join them!
             </p>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {activeRooms.map((room, i) => (
                 <motion.div
                   key={room.id}
@@ -254,10 +275,10 @@ export default function Index() {
                 >
                   <Link
                     to={`/watch-together?invite=${room.invite_code}`}
-                    className="block group bg-card rounded-2xl p-5 border border-border hover:border-primary hover:shadow-lg transition-all"
+                    className="block group bg-card rounded-2xl p-4 sm:p-5 border border-border hover:border-primary hover:shadow-lg transition-all"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-display text-lg font-semibold text-foreground truncate flex-1 min-w-0">
+                      <h3 className="font-display text-base sm:text-lg font-semibold text-foreground truncate flex-1 min-w-0">
                         {room.movie_title}
                       </h3>
                       <Badge variant="secondary" className="ml-2 shrink-0">
@@ -281,7 +302,7 @@ export default function Index() {
         </section>
       )}
 
-      <footer className="border-t border-border py-8 text-center text-muted-foreground text-sm">
+      <footer className="border-t border-border py-6 sm:py-8 text-center text-muted-foreground text-xs sm:text-sm">
         <p>Made with <Heart className="w-3 h-3 inline text-primary" /> for movie nights with friends</p>
       </footer>
     </div>
