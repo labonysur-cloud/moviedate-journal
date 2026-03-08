@@ -1,27 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookHeart, Plus, Heart, X, Pen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getJournalEntries, addJournalEntry, type JournalEntry } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+
+interface JournalEntry {
+  id: string;
+  movie_title: string;
+  date: string;
+  content: string;
+  mood: string;
+  author: string;
+}
 
 const moods = ["🥰 Loved it", "😭 Cried", "😂 Laughed", "🤯 Mind-blown", "😴 Cozy vibes", "💭 Thoughtful"];
 
 export default function Journal() {
-  const [entries, setEntries] = useState<JournalEntry[]>(getJournalEntries);
+  const { user } = useAuth();
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ movieTitle: "", content: "", mood: "", author: "" });
 
-  const handleAdd = () => {
-    if (!form.movieTitle || !form.content) return;
-    const entry = addJournalEntry({
-      ...form,
-      date: new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }),
-    });
-    setEntries((prev) => [entry, ...prev]);
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("journal_entries")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) toast.error("Failed to load journal");
+        else setEntries(data ?? []);
+        setLoading(false);
+      });
+  }, [user]);
+
+  const handleAdd = async () => {
+    if (!form.movieTitle || !form.content || !user) return;
+    const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const { data, error } = await supabase
+      .from("journal_entries")
+      .insert({
+        user_id: user.id,
+        movie_title: form.movieTitle,
+        content: form.content,
+        mood: form.mood,
+        author: form.author,
+        date: dateStr,
+      })
+      .select()
+      .single();
+    if (error) { toast.error("Failed to save entry"); return; }
+    setEntries((prev) => [data, ...prev]);
     setForm({ movieTitle: "", content: "", mood: "", author: "" });
     setShowForm(false);
+    toast.success("Entry saved! 📖");
   };
 
   return (
@@ -41,7 +78,6 @@ export default function Journal() {
           </Button>
         </div>
 
-        {/* New Entry Form */}
         <AnimatePresence>
           {showForm && (
             <motion.div
@@ -98,43 +134,38 @@ export default function Journal() {
           )}
         </AnimatePresence>
 
-        {/* Entries */}
-        {entries.length === 0 && !showForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-20"
-          >
+        {loading ? (
+          <div className="text-center py-20 text-muted-foreground">Loading...</div>
+        ) : entries.length === 0 && !showForm ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
             <BookHeart className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
             <p className="text-muted-foreground font-display text-lg">No entries yet...</p>
             <p className="text-muted-foreground text-sm mt-1">Watch a movie with friends and write about it! ✨</p>
           </motion.div>
-        )}
-
-        <div className="space-y-6">
-          {entries.map((entry, i) => (
-            <motion.div
-              key={entry.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="bg-card rounded-2xl p-6 border border-border hover:border-accent/50 transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-display text-xl font-semibold text-foreground">{entry.movieTitle}</h3>
-                  <p className="text-xs text-muted-foreground">{entry.date} · by {entry.author || "Anonymous"}</p>
+        ) : (
+          <div className="space-y-6">
+            {entries.map((entry, i) => (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-card rounded-2xl p-6 border border-border hover:border-accent/50 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="font-display text-xl font-semibold text-foreground">{entry.movie_title}</h3>
+                    <p className="text-xs text-muted-foreground">{entry.date} · by {entry.author || "Anonymous"}</p>
+                  </div>
+                  {entry.mood && (
+                    <span className="text-sm bg-secondary px-3 py-1 rounded-full">{entry.mood}</span>
+                  )}
                 </div>
-                {entry.mood && (
-                  <span className="text-sm bg-secondary px-3 py-1 rounded-full">
-                    {entry.mood}
-                  </span>
-                )}
-              </div>
-              <p className="text-foreground/80 leading-relaxed whitespace-pre-line">{entry.content}</p>
-            </motion.div>
-          ))}
-        </div>
+                <p className="text-foreground/80 leading-relaxed whitespace-pre-line">{entry.content}</p>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
