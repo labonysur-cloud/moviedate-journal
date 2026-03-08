@@ -26,8 +26,10 @@ const EMOJI_LIST = [
   "😂", "❤️", "🔥", "👏", "😍", "🥺", "😭", "🤣", "💀", "✨",
   "🎬", "🍿", "👀", "😱", "🥰", "😏", "💕", "🙌", "😤", "🫣",
   "😮", "🤯", "💔", "🎉", "👻", "😴", "🤩", "😈", "💖", "🫶",
+];
 
 export default function WatchRoom() {
+  const [searchParams] = useSearchParams();
   const roomId = searchParams.get("room");
   const inviteCode = searchParams.get("invite");
   const navigate = useNavigate();
