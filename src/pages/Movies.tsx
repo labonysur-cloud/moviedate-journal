@@ -129,8 +129,10 @@ export default function Movies() {
       watch_url: form.watchUrl || undefined,
       embed_url: form.embedUrl || undefined,
       rating: form.rating || undefined,
+      total_seasons: form.totalSeasons ? parseInt(form.totalSeasons) : undefined,
     });
     setForm({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" });
+    setLinkInput("");
     setShowForm(false);
   };
 
