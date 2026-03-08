@@ -8,6 +8,7 @@ export interface Movie {
   addedBy: string;
   rating?: string;
   watchUrl?: string;
+  embedUrl?: string;
 }
 
 export interface Ticket {
@@ -67,6 +68,7 @@ const defaultMovies: Movie[] = [
     addedBy: "You",
     rating: "7.1",
     watchUrl: "https://moviebox.ph/detail/mean-girls-cCOciFua797?id=5998024665060044672&scene=&page_from=search_detail&type=/movie/detail",
+    embedUrl: "https://123movienow.cc/spa/videoPlayPage/movies/mean-girls-hindi-EKXMqPHAh19?id=7571072428810851000&type=/movie/detail&detailSe=&detailEp=&lang=en",
   },
 ];
 
