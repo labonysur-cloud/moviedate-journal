@@ -44,6 +44,11 @@ const EMOJI_LIST = [
   const [loading, setLoading] = useState(true);
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [showGif, setShowGif] = useState(false);
+  const [gifSearch, setGifSearch] = useState("");
+  const [gifs, setGifs] = useState<string[]>([]);
+  const [gifLoading, setGifLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [profiles, setProfiles] = useState<Record<string, { display_name: string; avatar_url: string | null }>>({});
 
