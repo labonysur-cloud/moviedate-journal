@@ -9,6 +9,7 @@ export interface Movie {
   rating?: string;
   watchUrl?: string;
   embedUrl?: string;
+  totalSeasons?: number;
 }
 
 export interface Ticket {
