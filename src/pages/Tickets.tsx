@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Ticket as TicketIcon, Sparkles, Film, ChevronRight } from "lucide-react";
+import { Ticket as TicketIcon, Sparkles, Film, ChevronRight, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMovies } from "@/hooks/useMovies";
 import { useTickets } from "@/hooks/useTickets";
 import { useAuth } from "@/contexts/AuthContext";
 import SeatPicker from "@/components/SeatPicker";
 import TicketCard, { type TicketDisplayData } from "@/components/TicketCard";
+import ShareTicketDialog from "@/components/ShareTicketDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { ClapperboardIcon, PopcornIcon } from "@/components/icons/CinemaIcons";
 import { useSearchParams } from "react-router-dom";
@@ -26,13 +27,56 @@ export default function Tickets() {
   const [aiData, setAiData] = useState<any>(null);
   const [newTicket, setNewTicket] = useState<TicketDisplayData | null>(null);
 
-  // Preselect movie from URL
+  // Share dialog state
+  const [shareTicketId, setShareTicketId] = useState<string | null>(null);
+  const [shareMovieTitle, setShareMovieTitle] = useState("");
+
+  // Shared tickets received
+  const [sharedTickets, setSharedTickets] = useState<TicketDisplayData[]>([]);
+
   useEffect(() => {
     if (preselectedMovieTitle && movies.length > 0) {
       const found = movies.find((m) => m.title === preselectedMovieTitle);
       if (found) setSelectedMovieId(found.id);
     }
   }, [preselectedMovieTitle, movies]);
+
+  // Fetch shared tickets
+  useEffect(() => {
+    if (!user) return;
+    const fetchShared = async () => {
+      const { data } = await supabase
+        .from("shared_tickets")
+        .select("*, tickets(*)")
+        .eq("shared_with", user.id)
+        .order("created_at", { ascending: false });
+
+      if (data) {
+        const mapped: TicketDisplayData[] = data
+          .filter((s: any) => s.tickets)
+          .map((s: any) => {
+            const t = s.tickets;
+            const movie = movies.find((m: any) => m.id === t.movie_id);
+            return {
+              id: t.id,
+              movieTitle: t.movie_title,
+              date: t.date,
+              time: t.time,
+              seat: t.seat,
+              genre: t.genre || "Movie",
+              poster: movie?.poster,
+              year: movie?.year,
+              rating: movie?.rating,
+              colorTheme: "coral",
+              emoji: "🎁",
+              tagline: "Shared with you by a friend!",
+            };
+          });
+        setSharedTickets(mapped);
+      }
+    };
+    if (movies.length > 0) fetchShared();
+  }, [user, movies]);
 
   const selectedMovie = movies.find((m) => m.id === selectedMovieId);
 
@@ -45,9 +89,9 @@ export default function Tickets() {
     if (!selectedMovie || !selectedSeat) return;
     setStep("generating");
 
-    // Call AI to generate ticket details
+    let aiResult: any = null;
     try {
-      const { data: aiResult } = await supabase.functions.invoke("generate-ticket", {
+      const { data } = await supabase.functions.invoke("generate-ticket", {
         body: {
           title: selectedMovie.title,
           genre: selectedMovie.genre,
@@ -56,17 +100,18 @@ export default function Tickets() {
           type: "ticket",
         },
       });
-      setAiData(aiResult);
+      aiResult = data;
+      setAiData(data);
     } catch {
-      setAiData({
+      aiResult = {
         tagline: "Enjoy the show!",
         color_theme: "gold",
         emoji: "🎬",
-        category: selectedMovie.genre || "Movie",
         mood: "cozy",
         fun_fact: "Movie magic awaits!",
         suggested_snack: "Popcorn 🍿",
-      });
+      };
+      setAiData(aiResult);
     }
 
     const now = new Date();
@@ -90,12 +135,12 @@ export default function Tickets() {
         poster: selectedMovie.poster,
         year: selectedMovie.year,
         rating: selectedMovie.rating,
-        colorTheme: aiData?.color_theme || "gold",
-        tagline: aiData?.tagline,
-        emoji: aiData?.emoji || "🎬",
-        mood: aiData?.mood,
-        funFact: aiData?.fun_fact,
-        suggestedSnack: aiData?.suggested_snack,
+        colorTheme: aiResult?.color_theme || "gold",
+        tagline: aiResult?.tagline,
+        emoji: aiResult?.emoji || "🎬",
+        mood: aiResult?.mood,
+        funFact: aiResult?.fun_fact,
+        suggestedSnack: aiResult?.suggested_snack,
       });
       setStep("done");
     } else {
@@ -103,31 +148,17 @@ export default function Tickets() {
     }
   };
 
-  // Use AI data once it arrives (for the ticket card)
-  useEffect(() => {
-    if (aiData && newTicket) {
-      setNewTicket((prev) =>
-        prev
-          ? {
-              ...prev,
-              colorTheme: aiData.color_theme || prev.colorTheme,
-              tagline: aiData.tagline || prev.tagline,
-              emoji: aiData.emoji || prev.emoji,
-              mood: aiData.mood || prev.mood,
-              funFact: aiData.fun_fact || prev.funFact,
-              suggestedSnack: aiData.suggested_snack || prev.suggestedSnack,
-            }
-          : prev
-      );
-    }
-  }, [aiData]);
-
   const resetBooking = () => {
     setStep("movie");
     setSelectedMovieId("");
     setSelectedSeat("");
     setAiData(null);
     setNewTicket(null);
+  };
+
+  const openShareDialog = (ticketId: string, movieTitle: string) => {
+    setShareTicketId(ticketId);
+    setShareMovieTitle(movieTitle);
   };
 
   const ticketDisplayData: TicketDisplayData[] = tickets.map((t) => {
@@ -193,11 +224,7 @@ export default function Tickets() {
                     >
                       <div className="flex items-center gap-3">
                         {movie.poster ? (
-                          <img
-                            src={movie.poster}
-                            alt={movie.title}
-                            className="w-10 h-14 rounded object-cover"
-                          />
+                          <img src={movie.poster} alt={movie.title} className="w-10 h-14 rounded object-cover" />
                         ) : (
                           <div className="w-10 h-14 rounded bg-secondary flex items-center justify-center">
                             <Film className="w-5 h-5 text-muted-foreground" />
@@ -242,15 +269,10 @@ export default function Tickets() {
               <p className="text-sm text-muted-foreground mb-6">
                 Watching: <span className="font-semibold text-foreground">{selectedMovie?.title}</span>
               </p>
-              <SeatPicker
-                selectedSeat={selectedSeat}
-                onSelect={setSelectedSeat}
-              />
+              <SeatPicker selectedSeat={selectedSeat} onSelect={setSelectedSeat} />
               {selectedSeat && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 flex gap-3">
-                  <Button variant="outline" onClick={() => setStep("movie")}>
-                    Back
-                  </Button>
+                  <Button variant="outline" onClick={() => setStep("movie")}>Back</Button>
                   <Button variant="warm" onClick={handleBook} className="flex-1 sm:flex-none">
                     <TicketIcon className="w-4 h-4 mr-1" />
                     Generate My Ticket ✨
@@ -267,18 +289,11 @@ export default function Tickets() {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-card rounded-2xl p-12 border border-border mb-10 text-center"
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-              >
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}>
                 <ClapperboardIcon className="w-16 h-16 mx-auto" />
               </motion.div>
-              <p className="font-display text-xl font-semibold text-foreground mt-4">
-                Creating your magical ticket...
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Our AI is crafting something special ✨
-              </p>
+              <p className="font-display text-xl font-semibold text-foreground mt-4">Creating your magical ticket...</p>
+              <p className="text-sm text-muted-foreground mt-2">Our AI is crafting something special ✨</p>
             </motion.div>
           )}
 
@@ -290,7 +305,11 @@ export default function Tickets() {
               transition={{ type: "spring", stiffness: 150, damping: 20 }}
               className="mb-10 max-w-md mx-auto"
             >
-              <TicketCard ticket={newTicket} isNew />
+              <TicketCard
+                ticket={newTicket}
+                isNew
+                onShareWithFriend={() => openShareDialog(newTicket.id, newTicket.movieTitle)}
+              />
               <div className="flex justify-center mt-4">
                 <Button variant="outline" onClick={resetBooking} className="rounded-full">
                   Book Another Ticket
@@ -299,6 +318,28 @@ export default function Tickets() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Shared tickets received */}
+        {sharedTickets.length > 0 && step !== "done" && (
+          <>
+            <h2 className="font-display text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <Gift className="w-6 h-6 text-primary" />
+              Tickets From Friends
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-6 mb-10">
+              {sharedTickets.map((ticket, i) => (
+                <motion.div
+                  key={`shared-${ticket.id}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <TicketCard ticket={ticket} compact />
+                </motion.div>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* All Tickets Collection */}
         {ticketDisplayData.length > 0 && step !== "done" && (
@@ -317,7 +358,11 @@ export default function Tickets() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                   >
-                    <TicketCard ticket={ticket} compact />
+                    <TicketCard
+                      ticket={ticket}
+                      compact
+                      onShareWithFriend={() => openShareDialog(ticket.id, ticket.movieTitle)}
+                    />
                   </motion.div>
                 ))}
             </div>
@@ -332,6 +377,14 @@ export default function Tickets() {
           </div>
         )}
       </div>
+
+      {/* Share Dialog */}
+      <ShareTicketDialog
+        ticketId={shareTicketId || ""}
+        movieTitle={shareMovieTitle}
+        open={!!shareTicketId}
+        onClose={() => setShareTicketId(null)}
+      />
     </div>
   );
 }
