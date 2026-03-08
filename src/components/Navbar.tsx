@@ -11,6 +11,7 @@ const links = [
   { to: "/tickets", label: "Tickets", icon: Ticket },
   { to: "/journal", label: "Journal", icon: BookHeart },
   { to: "/friends", label: "Friends", icon: Users },
+  { to: "/profile", label: "Profile", icon: UserCircle },
 ];
 
 export default function Navbar() {
