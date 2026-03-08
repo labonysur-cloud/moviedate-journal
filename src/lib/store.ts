@@ -46,6 +46,8 @@ const defaultMovies: Movie[] = [
     addedBy: "You",
     rating: "8.2",
     watchUrl: "https://moviebox.ph/detail/gilmore-girls-cCOciFua797?id=5998494678717452072&scene=&season=1&page_from=search_detail&type=/movie/detail",
+    embedUrl: "https://123movienow.cc/spa/videoPlayPage/movies/gilmore-girls-cCOciFua797?id=5998494678717452072&type=/movie/detail&detailSe=1&detailEp=1&lang=en",
+    totalSeasons: 7,
   },
   {
     id: "2",
