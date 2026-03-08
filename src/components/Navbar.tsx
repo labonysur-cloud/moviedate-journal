@@ -22,7 +22,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-gingham backdrop-blur-md bg-background/90 border-b-2 border-primary/20">
+    <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/95 border-b-2 border-primary/20 shadow-sm">
       <div className="container mx-auto px-4 flex items-center justify-between h-14 sm:h-16">
         <Link to="/" className="flex items-center gap-2 group">
           <Heart className="w-5 h-5 text-primary fill-primary group-hover:scale-110 transition-transform" />
