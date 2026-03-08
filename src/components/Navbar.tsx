@@ -18,6 +18,7 @@ const links = [
 export default function Navbar() {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border">
