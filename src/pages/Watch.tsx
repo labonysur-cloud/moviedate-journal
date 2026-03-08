@@ -104,38 +104,17 @@ export default function Watch() {
         </div>
       )}
 
-      {/* Video embed with vintage TV frame */}
-      <div className="flex items-center justify-center px-4 py-6" style={{ height: seasons > 0 ? "calc(100vh - 168px)" : "calc(100vh - 120px)" }}>
-        <div className="relative w-full max-w-5xl mx-auto" style={{ aspectRatio: "4/3" }}>
-          {/* TV frame image */}
-          <img
-            src={vintageTv}
-            alt=""
-            className="absolute inset-0 w-full h-full object-contain z-10 pointer-events-none select-none"
-            draggable={false}
-          />
-          {/* Video iframe positioned inside the TV screen area */}
-          <div
-            className="absolute overflow-hidden rounded-[2%]"
-            style={{
-              top: "7%",
-              left: "4.5%",
-              width: "63%",
-              height: "78%",
-              borderRadius: "5% / 6%",
-            }}
-          >
-            <iframe
-              key={currentUrl}
-              src={currentUrl}
-              title={`${title} S${season}E${episode}`}
-              className="w-full h-full border-0"
-              allowFullScreen
-              allow="autoplay; fullscreen; picture-in-picture"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-            />
-          </div>
-        </div>
+      {/* Video embed */}
+      <div className="w-full" style={{ height: seasons > 0 ? "calc(100vh - 168px)" : "calc(100vh - 120px)" }}>
+        <iframe
+          key={currentUrl}
+          src={currentUrl}
+          title={`${title} S${season}E${episode}`}
+          className="w-full h-full border-0"
+          allowFullScreen
+          allow="autoplay; fullscreen; picture-in-picture"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+        />
       </div>
 
       {/* Bottom bar */}
