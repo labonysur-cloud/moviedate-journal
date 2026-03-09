@@ -182,6 +182,20 @@ export function useFriends() {
     await fetchFriends();
   };
 
+  const removeFriend = async (requestId: string, friendName: string) => {
+    const { error } = await supabase
+      .from("friend_requests")
+      .delete()
+      .eq("id", requestId);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Friend removed", description: `${friendName} has been removed from your friends` });
+    await fetchFriends();
+  };
+
   return {
     requests,
     friends,
@@ -191,6 +205,7 @@ export function useFriends() {
     addFriendByCode,
     acceptRequest,
     declineRequest,
+    removeFriend,
     refetch: fetchFriends,
   };
 }

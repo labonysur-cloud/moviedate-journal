@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Link2, Copy, Check, UserPlus, Heart, Mail } from "lucide-react";
+import { Users, Link2, Copy, Check, UserPlus, Heart, Mail, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFriends } from "@/hooks/useFriends";
@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FriendsSkeleton } from "@/components/PageSkeleton";
 
 export default function Friends() {
-  const { friends, requests, myLink, loading, generateShareLink, addFriendByCode, acceptRequest, declineRequest } = useFriends();
+  const { friends, requests, myLink, loading, generateShareLink, addFriendByCode, acceptRequest, declineRequest, removeFriend } = useFriends();
   const { user } = useAuth();
   const [friendCode, setFriendCode] = useState("");
   const [copied, setCopied] = useState(false);
@@ -194,11 +194,19 @@ export default function Friends() {
                       {friend.display_name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-semibold text-foreground text-sm truncate">{friend.display_name}</p>
                     <p className="text-xs text-muted-foreground">Movie buddy 🍿</p>
                   </div>
-                  <StarBurstIcon className="w-4 h-4 text-accent ml-auto shrink-0" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive h-8 w-8 p-0 shrink-0"
+                    onClick={() => removeFriend(friend.id, friend.display_name)}
+                    title="Remove friend"
+                  >
+                    <UserMinus className="w-4 h-4" />
+                  </Button>
                 </motion.div>
               ))}
             </div>
