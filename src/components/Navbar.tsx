@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Film, Ticket, BookHeart, Home, Users, UserCircle, Moon, Sun, Menu, X, Cherry, Heart } from "lucide-react";
+import { Film, Ticket, BookHeart, Home, Users, UserCircle, Moon, Sun, Menu, X, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
+import { useSharedTicketCount } from "@/hooks/useSharedTicketCount";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
@@ -20,6 +21,7 @@ export default function Navbar() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const sharedTicketCount = useSharedTicketCount();
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/95 border-b-2 border-primary/20 shadow-sm">
@@ -39,7 +41,7 @@ export default function Navbar() {
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all",
+                "relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all",
                 location.pathname === to
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
@@ -47,6 +49,11 @@ export default function Navbar() {
             >
               <Icon className="w-4 h-4" />
               <span>{label}</span>
+              {to === "/tickets" && sharedTicketCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 animate-pulse">
+                  {sharedTicketCount}
+                </span>
+              )}
             </Link>
           ))}
           <Button
@@ -86,9 +93,14 @@ export default function Navbar() {
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="h-9 w-9 rounded-full"
+            className="h-9 w-9 rounded-full relative"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {sharedTicketCount > 0 && !mobileOpen && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold px-0.5">
+                {sharedTicketCount}
+              </span>
+            )}
           </Button>
         </div>
       </div>
@@ -102,7 +114,7 @@ export default function Navbar() {
               to={to}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                "relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
                 location.pathname === to
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
@@ -110,6 +122,11 @@ export default function Navbar() {
             >
               <Icon className="w-4 h-4" />
               {label}
+              {to === "/tickets" && sharedTicketCount > 0 && (
+                <span className="ml-auto min-w-[20px] h-[20px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                  {sharedTicketCount} 🎁
+                </span>
+              )}
             </Link>
           ))}
           {user && (
