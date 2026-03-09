@@ -25,9 +25,10 @@ export default function Tickets() {
 
   const [step, setStep] = useState<BookingStep>("movie");
   const [selectedMovieId, setSelectedMovieId] = useState("");
-  const [selectedSeat, setSelectedSeat] = useState("");
+  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [aiData, setAiData] = useState<any>(null);
   const [newTicket, setNewTicket] = useState<TicketDisplayData | null>(null);
+  const [bookedSeats, setBookedSeats] = useState<string[]>([]);
 
   const [shareTicketId, setShareTicketId] = useState<string | null>(null);
   const [shareMovieTitle, setShareMovieTitle] = useState("");
@@ -77,6 +78,23 @@ export default function Tickets() {
     if (movies.length > 0) fetchShared();
   }, [user, movies]);
 
+  // Fetch booked seats when movie is selected
+  useEffect(() => {
+    if (!selectedMovieId) {
+      setBookedSeats([]);
+      return;
+    }
+    const fetchBookedSeats = async () => {
+      const { data, error } = await supabase.rpc("get_booked_seats", {
+        p_movie_id: selectedMovieId,
+      });
+      if (!error && data) {
+        setBookedSeats(data as string[]);
+      }
+    };
+    fetchBookedSeats();
+  }, [selectedMovieId]);
+
   const selectedMovie = movies.find((m) => m.id === selectedMovieId);
 
   const handleSelectSeat = () => {
@@ -85,7 +103,7 @@ export default function Tickets() {
   };
 
   const handleBook = async () => {
-    if (!selectedMovie || !selectedSeat) return;
+    if (!selectedMovie || selectedSeats.length === 0) return;
     setStep("generating");
 
     let aiResult: any = null;
@@ -114,12 +132,13 @@ export default function Tickets() {
     }
 
     const now = new Date();
+    const seatStr = selectedSeats.join(",");
     const ticketResult = await bookTicket({
       movie_id: selectedMovie.id,
       movie_title: selectedMovie.title,
       date: now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       time: now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-      seat: selectedSeat,
+      seat: seatStr,
       genre: selectedMovie.genre,
     });
 
@@ -150,9 +169,10 @@ export default function Tickets() {
   const resetBooking = () => {
     setStep("movie");
     setSelectedMovieId("");
-    setSelectedSeat("");
+    setSelectedSeats([]);
     setAiData(null);
     setNewTicket(null);
+    setBookedSeats([]);
   };
 
   const openShareDialog = (ticketId: string, movieTitle: string) => {
@@ -200,42 +220,31 @@ export default function Tickets() {
                 Step 1: Choose Your Movie
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-                {movies.map((movie) => {
-                  const alreadyHasTicket = hasTicketForMovie(movie.id);
-                  return (
-                    <button
-                      key={movie.id}
-                      onClick={() => !alreadyHasTicket && setSelectedMovieId(movie.id)}
-                      disabled={alreadyHasTicket}
-                      className={`relative text-left p-2 sm:p-3 rounded-xl border-2 transition-all ${
-                        selectedMovieId === movie.id
-                          ? "border-accent bg-accent/10 shadow-md"
-                          : alreadyHasTicket
-                          ? "border-border bg-muted/50 opacity-60 cursor-not-allowed"
-                          : "border-border hover:border-accent/50 bg-card"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        {movie.poster ? (
-                          <img src={movie.poster} alt={movie.title} className="w-8 sm:w-10 h-12 sm:h-14 rounded object-cover shrink-0" loading="lazy" />
-                        ) : (
-                          <div className="w-8 sm:w-10 h-12 sm:h-14 rounded bg-secondary flex items-center justify-center shrink-0">
-                            <Film className="w-4 sm:w-5 h-4 sm:h-5 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="font-display font-semibold text-foreground text-xs sm:text-sm truncate">{movie.title}</p>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground">{movie.genre} · {movie.year}</p>
+                {movies.map((movie) => (
+                  <button
+                    key={movie.id}
+                    onClick={() => setSelectedMovieId(movie.id)}
+                    className={`relative text-left p-2 sm:p-3 rounded-xl border-2 transition-all ${
+                      selectedMovieId === movie.id
+                        ? "border-accent bg-accent/10 shadow-md"
+                        : "border-border hover:border-accent/50 bg-card"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      {movie.poster ? (
+                        <img src={movie.poster} alt={movie.title} className="w-8 sm:w-10 h-12 sm:h-14 rounded object-cover shrink-0" loading="lazy" />
+                      ) : (
+                        <div className="w-8 sm:w-10 h-12 sm:h-14 rounded bg-secondary flex items-center justify-center shrink-0">
+                          <Film className="w-4 sm:w-5 h-4 sm:h-5 text-muted-foreground" />
                         </div>
-                      </div>
-                      {alreadyHasTicket && (
-                        <span className="absolute top-1 right-1 text-[8px] sm:text-[9px] bg-accent text-accent-foreground px-1 sm:px-1.5 py-0.5 rounded-full font-bold">
-                          ✓ Got ticket
-                        </span>
                       )}
-                    </button>
-                  );
-                })}
+                      <div className="min-w-0">
+                        <p className="font-display font-semibold text-foreground text-xs sm:text-sm truncate">{movie.title}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">{movie.genre} · {movie.year}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
               {selectedMovieId && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
@@ -257,18 +266,19 @@ export default function Tickets() {
             >
               <h3 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
                 <PopcornIcon className="w-5 h-5" />
-                Step 2: Pick Your Seat
+                Step 2: Pick Your Seats
               </h3>
               <p className="text-sm text-muted-foreground mb-4 sm:mb-6">
                 Watching: <span className="font-semibold text-foreground">{selectedMovie?.title}</span>
+                <span className="ml-2 text-xs text-accent">(select multiple seats!)</span>
               </p>
-              <SeatPicker selectedSeat={selectedSeat} onSelect={setSelectedSeat} />
-              {selectedSeat && (
+              <SeatPicker selectedSeats={selectedSeats} onSelect={setSelectedSeats} bookedSeats={bookedSeats} />
+              {selectedSeats.length > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 sm:mt-6 flex gap-3">
                   <Button variant="outline" onClick={() => setStep("movie")}>Back</Button>
                   <Button variant="warm" onClick={handleBook} className="flex-1 sm:flex-none">
                     <TicketIcon className="w-4 h-4 mr-1" />
-                    Generate My Ticket ✨
+                    Book {selectedSeats.length} Seat{selectedSeats.length > 1 ? "s" : ""} ✨
                   </Button>
                 </motion.div>
               )}

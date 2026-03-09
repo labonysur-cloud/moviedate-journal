@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useFriends } from "@/hooks/useFriends";
 import { useAuth } from "@/contexts/AuthContext";
 import { HeartSparkleIcon, StarBurstIcon } from "@/components/icons/CinemaIcons";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FriendsSkeleton } from "@/components/PageSkeleton";
 
 export default function Friends() {
@@ -33,9 +33,14 @@ export default function Friends() {
   const handleAddFriend = async () => {
     if (!friendCode.trim()) return;
     setAdding(true);
-    const code = friendCode.includes("code=")
-      ? new URL(friendCode).searchParams.get("code") || friendCode
-      : friendCode.trim();
+    let code = friendCode.trim();
+    try {
+      if (code.includes("code=")) {
+        code = new URL(code).searchParams.get("code") || code;
+      }
+    } catch {
+      // Not a valid URL, use as-is
+    }
     await addFriendByCode(code);
     setFriendCode("");
     setAdding(false);
@@ -135,6 +140,9 @@ export default function Friends() {
                   <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 gap-2">
                     <div className="flex items-center gap-3 min-w-0">
                       <Avatar className="w-8 h-8 shrink-0">
+                        {req.from_profile?.avatar_url && (
+                          <AvatarImage src={req.from_profile.avatar_url} alt={req.from_profile.display_name} />
+                        )}
                         <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                           {req.from_profile?.display_name?.charAt(0) || "?"}
                         </AvatarFallback>
@@ -179,6 +187,9 @@ export default function Friends() {
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/50 transition-colors"
                 >
                   <Avatar className="w-10 h-10 shrink-0">
+                    {friend.avatar_url && (
+                      <AvatarImage src={friend.avatar_url} alt={friend.display_name} />
+                    )}
                     <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                       {friend.display_name.charAt(0).toUpperCase()}
                     </AvatarFallback>

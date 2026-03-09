@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFriends } from "@/hooks/useFriends";
@@ -103,6 +103,9 @@ export default function ShareTicketDialog({ ticketId, movieTitle, open, onClose 
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="w-9 h-9">
+                        {friend.avatar_url && (
+                          <AvatarImage src={friend.avatar_url} alt={friend.display_name} />
+                        )}
                         <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
                           {friend.display_name.charAt(0).toUpperCase()}
                         </AvatarFallback>
