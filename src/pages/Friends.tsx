@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FriendsSkeleton } from "@/components/PageSkeleton";
 
 export default function Friends() {
-  const { friends, requests, myLink, loading, generateShareLink, addFriendByCode, acceptRequest, declineRequest } = useFriends();
+  const { friends, requests, myLink, loading, generateShareLink, addFriendByCode, acceptRequest, declineRequest, removeFriend } = useFriends();
   const { user } = useAuth();
   const [friendCode, setFriendCode] = useState("");
   const [copied, setCopied] = useState(false);
