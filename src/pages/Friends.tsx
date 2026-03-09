@@ -33,9 +33,14 @@ export default function Friends() {
   const handleAddFriend = async () => {
     if (!friendCode.trim()) return;
     setAdding(true);
-    const code = friendCode.includes("code=")
-      ? new URL(friendCode).searchParams.get("code") || friendCode
-      : friendCode.trim();
+    let code = friendCode.trim();
+    try {
+      if (code.includes("code=")) {
+        code = new URL(code).searchParams.get("code") || code;
+      }
+    } catch {
+      // Not a valid URL, use as-is
+    }
     await addFriendByCode(code);
     setFriendCode("");
     setAdding(false);
