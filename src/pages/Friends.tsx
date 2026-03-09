@@ -135,6 +135,9 @@ export default function Friends() {
                   <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 gap-2">
                     <div className="flex items-center gap-3 min-w-0">
                       <Avatar className="w-8 h-8 shrink-0">
+                        {req.from_profile?.avatar_url && (
+                          <AvatarImage src={req.from_profile.avatar_url} alt={req.from_profile.display_name} />
+                        )}
                         <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                           {req.from_profile?.display_name?.charAt(0) || "?"}
                         </AvatarFallback>
