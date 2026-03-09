@@ -11,12 +11,20 @@ const rows = [
 ];
 
 interface SeatPickerProps {
-  selectedSeat: string;
-  onSelect: (seat: string) => void;
+  selectedSeats: string[];
+  onSelect: (seats: string[]) => void;
   bookedSeats?: string[];
 }
 
-export default function SeatPicker({ selectedSeat, onSelect, bookedSeats = [] }: SeatPickerProps) {
+export default function SeatPicker({ selectedSeats, onSelect, bookedSeats = [] }: SeatPickerProps) {
+  const toggleSeat = (seatId: string) => {
+    if (selectedSeats.includes(seatId)) {
+      onSelect(selectedSeats.filter((s) => s !== seatId));
+    } else {
+      onSelect([...selectedSeats, seatId]);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center gap-2">
       {/* Screen */}
@@ -28,14 +36,14 @@ export default function SeatPicker({ selectedSeat, onSelect, bookedSeats = [] }:
       </div>
 
       {/* Seats */}
-      {rows.map((row, rowIdx) => (
+      {rows.map((row) => (
         <div key={row.label} className="flex items-center gap-1">
           <span className="w-5 text-[10px] font-bold text-muted-foreground text-right">{row.label}</span>
           <div className="flex gap-1" style={{ paddingLeft: `${row.offset * 20}px`, paddingRight: `${row.offset * 20}px` }}>
             {Array.from({ length: row.seats }, (_, i) => {
               const seatId = `${row.label}${i + 1}`;
               const isBooked = bookedSeats.includes(seatId);
-              const isSelected = selectedSeat === seatId;
+              const isSelected = selectedSeats.includes(seatId);
               const isVip = row.label === "F";
 
               return (
@@ -43,7 +51,7 @@ export default function SeatPicker({ selectedSeat, onSelect, bookedSeats = [] }:
                   key={seatId}
                   whileHover={!isBooked ? { scale: 1.2 } : {}}
                   whileTap={!isBooked ? { scale: 0.9 } : {}}
-                  onClick={() => !isBooked && onSelect(seatId)}
+                  onClick={() => !isBooked && toggleSeat(seatId)}
                   disabled={isBooked}
                   className={cn(
                     "w-7 h-7 rounded-t-lg text-[9px] font-bold transition-all border-b-2",
@@ -62,6 +70,13 @@ export default function SeatPicker({ selectedSeat, onSelect, bookedSeats = [] }:
           <span className="w-5 text-[10px] font-bold text-muted-foreground">{row.label}</span>
         </div>
       ))}
+
+      {/* Selected count */}
+      {selectedSeats.length > 0 && (
+        <p className="text-xs text-accent font-semibold mt-1">
+          {selectedSeats.length} seat{selectedSeats.length > 1 ? "s" : ""} selected: {selectedSeats.join(", ")}
+        </p>
+      )}
 
       {/* Legend */}
       <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground">

@@ -103,6 +103,9 @@ export default function ShareTicketDialog({ ticketId, movieTitle, open, onClose 
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="w-9 h-9">
+                        {friend.avatar_url && (
+                          <AvatarImage src={friend.avatar_url} alt={friend.display_name} />
+                        )}
                         <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
                           {friend.display_name.charAt(0).toUpperCase()}
                         </AvatarFallback>

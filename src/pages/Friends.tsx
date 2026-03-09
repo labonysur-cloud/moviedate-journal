@@ -182,6 +182,9 @@ export default function Friends() {
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/50 transition-colors"
                 >
                   <Avatar className="w-10 h-10 shrink-0">
+                    {friend.avatar_url && (
+                      <AvatarImage src={friend.avatar_url} alt={friend.display_name} />
+                    )}
                     <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                       {friend.display_name.charAt(0).toUpperCase()}
                     </AvatarFallback>
