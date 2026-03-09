@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Link2, Copy, Check, UserPlus, Heart, Mail } from "lucide-react";
+import { Users, Link2, Copy, Check, UserPlus, Heart, Mail, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFriends } from "@/hooks/useFriends";
