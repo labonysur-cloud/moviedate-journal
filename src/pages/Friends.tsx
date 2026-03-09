@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useFriends } from "@/hooks/useFriends";
 import { useAuth } from "@/contexts/AuthContext";
 import { HeartSparkleIcon, StarBurstIcon } from "@/components/icons/CinemaIcons";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FriendsSkeleton } from "@/components/PageSkeleton";
 
 export default function Friends() {
