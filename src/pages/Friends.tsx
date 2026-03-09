@@ -194,11 +194,19 @@ export default function Friends() {
                       {friend.display_name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-semibold text-foreground text-sm truncate">{friend.display_name}</p>
                     <p className="text-xs text-muted-foreground">Movie buddy 🍿</p>
                   </div>
-                  <StarBurstIcon className="w-4 h-4 text-accent ml-auto shrink-0" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive h-8 w-8 p-0 shrink-0"
+                    onClick={() => removeFriend(friend.id, friend.display_name)}
+                    title="Remove friend"
+                  >
+                    <UserMinus className="w-4 h-4" />
+                  </Button>
                 </motion.div>
               ))}
             </div>
