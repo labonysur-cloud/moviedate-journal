@@ -70,6 +70,9 @@ export default function Tickets() {
               colorTheme: "coral",
               emoji: "🎁",
               tagline: "Shared with you by a friend!",
+              movieId: t.movie_id,
+              embedUrl: movie?.embed_url,
+              totalSeasons: movie?.total_seasons,
             };
           });
         setSharedTickets(mapped);
