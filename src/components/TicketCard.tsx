@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Star, Share2, Download, Send, Play } from "lucide-react";
+import { Star, Share2, Download, Send, Play, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PopcornIcon, FilmReelIcon, StarBurstIcon } from "@/components/icons/CinemaIcons";
 import { cn } from "@/lib/utils";
