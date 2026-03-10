@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Star, Share2, Download, Send } from "lucide-react";
+import { Star, Share2, Download, Send, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PopcornIcon, FilmReelIcon, StarBurstIcon } from "@/components/icons/CinemaIcons";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 
 const colorThemes: Record<string, { bg: string; accent: string; text: string; border: string }> = {
