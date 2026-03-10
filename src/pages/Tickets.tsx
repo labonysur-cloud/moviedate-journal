@@ -70,6 +70,9 @@ export default function Tickets() {
               colorTheme: "coral",
               emoji: "🎁",
               tagline: "Shared with you by a friend!",
+              movieId: t.movie_id,
+              embedUrl: movie?.embed_url,
+              totalSeasons: movie?.total_seasons,
             };
           });
         setSharedTickets(mapped);
@@ -159,6 +162,9 @@ export default function Tickets() {
         mood: aiResult?.mood,
         funFact: aiResult?.fun_fact,
         suggestedSnack: aiResult?.suggested_snack,
+        movieId: selectedMovie.id,
+        embedUrl: selectedMovie.embed_url,
+        totalSeasons: selectedMovie.total_seasons,
       });
       setStep("done");
     } else {
@@ -194,6 +200,9 @@ export default function Tickets() {
       rating: movie?.rating,
       colorTheme: "gold",
       emoji: "🎬",
+      movieId: t.movie_id,
+      embedUrl: movie?.embed_url,
+      totalSeasons: movie?.total_seasons,
     };
   });
 

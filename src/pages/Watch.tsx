@@ -128,8 +128,8 @@ export default function Watch() {
           title={`${title} S${season}E${episode}`}
           className="w-full h-full border-0"
           allowFullScreen
-          allow="autoplay; fullscreen; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
 

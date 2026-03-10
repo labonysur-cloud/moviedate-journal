@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Star, Share2, Download, Send } from "lucide-react";
+import { Star, Share2, Download, Send, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PopcornIcon, FilmReelIcon, StarBurstIcon } from "@/components/icons/CinemaIcons";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 
 const colorThemes: Record<string, { bg: string; accent: string; text: string; border: string }> = {
@@ -33,6 +34,9 @@ export interface TicketDisplayData {
   mood?: string;
   funFact?: string;
   suggestedSnack?: string;
+  movieId?: string;
+  embedUrl?: string | null;
+  totalSeasons?: number | null;
 }
 
 interface TicketCardProps {
@@ -47,6 +51,16 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
   const theme = colorThemes[ticket.colorTheme || "gold"] || colorThemes.gold;
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const navigate = useNavigate();
+
+  const canWatch = !!ticket.embedUrl;
+
+  const handleWatchClick = () => {
+    if (!canWatch) return;
+    navigate(
+      `/watch?url=${encodeURIComponent(ticket.embedUrl!)}&title=${encodeURIComponent(ticket.movieTitle)}${ticket.totalSeasons ? `&seasons=${ticket.totalSeasons}` : ""}`
+    );
+  };
 
   const handleWebShare = async () => {
     if (navigator.share) {
@@ -84,10 +98,14 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
     <div className={cn("relative", compact && "scale-90 origin-top-left")}>
       {/* Capturable ticket area */}
       <div ref={ticketRef}>
-        <div className={cn(
-          "relative rounded-2xl overflow-hidden shadow-2xl",
-          isNew && "ring-2 ring-accent ring-offset-2 ring-offset-background"
-        )}>
+        <div
+          onClick={handleWatchClick}
+          className={cn(
+            "relative rounded-2xl overflow-hidden shadow-2xl",
+            canWatch && "cursor-pointer hover:shadow-3xl hover:scale-[1.01] transition-transform",
+            isNew && "ring-2 ring-accent ring-offset-2 ring-offset-background"
+          )}
+        >
           {/* Main ticket body */}
           <div className={cn("bg-gradient-to-br p-6 relative", theme.bg)}>
             {/* Top decorative strip */}
@@ -199,6 +217,17 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
       {/* Action buttons — outside the capturable area */}
       {showActions && !compact && (
         <div className="flex justify-center gap-2 mt-3 flex-wrap">
+          {canWatch && (
+            <Button
+              variant="warm"
+              size="sm"
+              className="text-xs rounded-full"
+              onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}
+            >
+              <Play className="w-3 h-3 mr-1" />
+              Watch Now
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -234,7 +263,12 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
 
       {/* Compact actions */}
       {showActions && compact && (
-        <div className="flex gap-1.5 mt-2 origin-top-left scale-[1.11]">
+        <div className="flex gap-1.5 mt-2 origin-top-left scale-[1.11] flex-wrap">
+          {canWatch && (
+            <Button variant="warm" size="sm" className="text-[10px] h-7 px-2" onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}>
+              <Play className="w-3 h-3 mr-0.5" /> Watch
+            </Button>
+          )}
           <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleDownload} disabled={downloading}>
             <Download className="w-3 h-3 mr-0.5" /> PNG
           </Button>
