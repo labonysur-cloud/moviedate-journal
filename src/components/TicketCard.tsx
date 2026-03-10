@@ -5,6 +5,9 @@ import { PopcornIcon, FilmReelIcon, StarBurstIcon } from "@/components/icons/Cin
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 
 const colorThemes: Record<string, { bg: string; accent: string; text: string; border: string }> = {
