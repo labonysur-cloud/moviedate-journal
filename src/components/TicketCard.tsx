@@ -311,7 +311,11 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
               <Play className="w-3 h-3 mr-0.5" /> Watch
             </Button>
           )}
-          <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleDownload} disabled={downloading}>
+          {canWatch && ticket.movieId && (
+            <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleWatchTogether} disabled={creatingRoom}>
+              {creatingRoom ? <Loader2 className="w-3 h-3 mr-0.5 animate-spin" /> : <Users className="w-3 h-3 mr-0.5" />} Together
+            </Button>
+          )}
             <Download className="w-3 h-3 mr-0.5" /> PNG
           </Button>
           <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleWebShare}>
