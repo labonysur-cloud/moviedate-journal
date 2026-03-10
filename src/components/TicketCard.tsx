@@ -34,6 +34,9 @@ export interface TicketDisplayData {
   mood?: string;
   funFact?: string;
   suggestedSnack?: string;
+  movieId?: string;
+  embedUrl?: string | null;
+  totalSeasons?: number | null;
 }
 
 interface TicketCardProps {
