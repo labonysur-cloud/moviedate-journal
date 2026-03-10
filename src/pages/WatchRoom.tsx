@@ -242,8 +242,8 @@ export default function WatchRoom() {
               title={room.movie_title}
               className="w-full h-full border-0"
               allowFullScreen
-              allow="autoplay; fullscreen; picture-in-picture"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
             />
           ) : (
             <div className="flex items-center justify-center h-full text-primary-foreground/50">

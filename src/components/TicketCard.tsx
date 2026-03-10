@@ -54,7 +54,10 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
   const theme = colorThemes[ticket.colorTheme || "gold"] || colorThemes.gold;
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const [creatingRoom, setCreatingRoom] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const canWatch = !!ticket.embedUrl;
 
