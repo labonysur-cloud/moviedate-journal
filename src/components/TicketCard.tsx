@@ -217,6 +217,17 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
       {/* Action buttons — outside the capturable area */}
       {showActions && !compact && (
         <div className="flex justify-center gap-2 mt-3 flex-wrap">
+          {canWatch && (
+            <Button
+              variant="warm"
+              size="sm"
+              className="text-xs rounded-full"
+              onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}
+            >
+              <Play className="w-3 h-3 mr-1" />
+              Watch Now
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
