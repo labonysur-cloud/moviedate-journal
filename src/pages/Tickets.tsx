@@ -194,6 +194,9 @@ export default function Tickets() {
       rating: movie?.rating,
       colorTheme: "gold",
       emoji: "🎬",
+      movieId: t.movie_id,
+      embedUrl: movie?.embed_url,
+      totalSeasons: movie?.total_seasons,
     };
   });
 
