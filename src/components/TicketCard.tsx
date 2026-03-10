@@ -257,6 +257,18 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
               <Play className="w-3 h-3 mr-1" />
               Watch Now
             </Button>
+           )}
+          {canWatch && ticket.movieId && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs rounded-full"
+              onClick={handleWatchTogether}
+              disabled={creatingRoom}
+            >
+              {creatingRoom ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Users className="w-3 h-3 mr-1" />}
+              Watch Together
+            </Button>
           )}
           <Button
             variant="outline"
