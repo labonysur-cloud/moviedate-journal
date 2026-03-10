@@ -316,6 +316,7 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
               {creatingRoom ? <Loader2 className="w-3 h-3 mr-0.5 animate-spin" /> : <Users className="w-3 h-3 mr-0.5" />} Together
             </Button>
           )}
+          <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleDownload} disabled={downloading}>
             <Download className="w-3 h-3 mr-0.5" /> PNG
           </Button>
           <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleWebShare}>
