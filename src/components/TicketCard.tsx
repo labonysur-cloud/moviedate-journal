@@ -51,6 +51,16 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
   const theme = colorThemes[ticket.colorTheme || "gold"] || colorThemes.gold;
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const navigate = useNavigate();
+
+  const canWatch = !!ticket.embedUrl;
+
+  const handleWatchClick = () => {
+    if (!canWatch) return;
+    navigate(
+      `/watch?url=${encodeURIComponent(ticket.embedUrl!)}&title=${encodeURIComponent(ticket.movieTitle)}${ticket.totalSeasons ? `&seasons=${ticket.totalSeasons}` : ""}`
+    );
+  };
 
   const handleWebShare = async () => {
     if (navigator.share) {
