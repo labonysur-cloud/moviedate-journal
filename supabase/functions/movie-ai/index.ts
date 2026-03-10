@@ -19,11 +19,11 @@ serve(async (req) => {
     let toolChoice: any | undefined;
 
     if (action === "autofill_from_url") {
-      systemPrompt = `You are a movie/TV show identification expert. Given a URL (from streaming sites, IMDb, Wikipedia, etc.), identify the movie or TV show and return its details. Analyze the URL structure, domain, and any identifiable slugs/IDs to determine the content. Be accurate.`;
+      systemPrompt = `You are a movie/TV show identification expert. Given a URL (from streaming sites, IMDb, Wikipedia, YouTube, etc.), identify the movie or TV show and return its details. For YouTube URLs, the video might be a full movie, trailer, or clip — identify the actual movie/show it relates to. Analyze the URL structure, domain, and any identifiable slugs/IDs to determine the content. Be accurate. IMPORTANT: Always return the original URL as the embed_url field.`;
       userPrompt = `Identify the movie or TV show from this URL: "${url}"
 ${title ? `Additional hint - the user also typed: "${title}"` : ""}
 
-Figure out what movie/show this links to and return its details.`;
+Figure out what movie/show this links to and return its details. Use the original URL "${url}" as the embed_url.`;
       tools = [{
         type: "function",
         function: {
