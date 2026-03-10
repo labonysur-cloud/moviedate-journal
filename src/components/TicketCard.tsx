@@ -263,7 +263,12 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
 
       {/* Compact actions */}
       {showActions && compact && (
-        <div className="flex gap-1.5 mt-2 origin-top-left scale-[1.11]">
+        <div className="flex gap-1.5 mt-2 origin-top-left scale-[1.11] flex-wrap">
+          {canWatch && (
+            <Button variant="warm" size="sm" className="text-[10px] h-7 px-2" onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}>
+              <Play className="w-3 h-3 mr-0.5" /> Watch
+            </Button>
+          )}
           <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleDownload} disabled={downloading}>
             <Download className="w-3 h-3 mr-0.5" /> PNG
           </Button>
