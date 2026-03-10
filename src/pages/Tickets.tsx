@@ -162,6 +162,9 @@ export default function Tickets() {
         mood: aiResult?.mood,
         funFact: aiResult?.fun_fact,
         suggestedSnack: aiResult?.suggested_snack,
+        movieId: selectedMovie.id,
+        embedUrl: selectedMovie.embed_url,
+        totalSeasons: selectedMovie.total_seasons,
       });
       setStep("done");
     } else {
