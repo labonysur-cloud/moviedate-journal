@@ -98,7 +98,14 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
     <div className={cn("relative", compact && "scale-90 origin-top-left")}>
       {/* Capturable ticket area */}
       <div ref={ticketRef}>
-        <div className={cn(
+        <div
+          onClick={handleWatchClick}
+          className={cn(
+            "relative rounded-2xl overflow-hidden shadow-2xl",
+            canWatch && "cursor-pointer hover:shadow-3xl hover:scale-[1.01] transition-transform",
+            isNew && "ring-2 ring-accent ring-offset-2 ring-offset-background"
+          )}
+        >
           "relative rounded-2xl overflow-hidden shadow-2xl",
           isNew && "ring-2 ring-accent ring-offset-2 ring-offset-background"
         )}>
