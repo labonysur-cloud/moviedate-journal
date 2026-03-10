@@ -74,7 +74,7 @@ export default function Movies() {
         description: data.description || prev.description,
         rating: data.rating || prev.rating,
         poster: data.poster || prev.poster,
-        embedUrl: data.embed_url || (isLink ? input : prev.embedUrl),
+        embedUrl: data.embed_url || (isLink ? input : "") || prev.embedUrl,
         totalSeasons: data.total_seasons ? String(data.total_seasons) : prev.totalSeasons,
       }));
       setShowForm(true);

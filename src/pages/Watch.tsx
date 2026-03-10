@@ -1,18 +1,34 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Ticket, BookHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+function toEmbedUrl(url: string): string {
+  // YouTube watch URLs → embed
+  const ytWatch = url.match(/(?:youtube\.com\/watch\?.*v=|youtu\.be\/)([\w-]{11})/);
+  if (ytWatch) {
+    const params = new URL(url.startsWith("http") ? url : `https://${url}`).searchParams;
+    const t = params.get("t");
+    return `https://www.youtube.com/embed/${ytWatch[1]}${t ? `?start=${parseInt(t)}` : ""}`;
+  }
+  // YouTube shorts → embed
+  const ytShorts = url.match(/youtube\.com\/shorts\/([\w-]{11})/);
+  if (ytShorts) return `https://www.youtube.com/embed/${ytShorts[1]}`;
+  // Already an embed URL or other URL — return as-is
+  return url;
+}
 
 export default function Watch() {
   const [searchParams] = useSearchParams();
-  const baseUrl = searchParams.get("url") || "";
+  const rawUrl = searchParams.get("url") || "";
   const title = searchParams.get("title") || "Movie";
   const seasons = parseInt(searchParams.get("seasons") || "0");
 
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
+
+  const baseUrl = useMemo(() => toEmbedUrl(rawUrl), [rawUrl]);
 
   const currentUrl = seasons > 0
     ? baseUrl.replace(/detailSe=\d+/, `detailSe=${season}`).replace(/detailEp=\d+/, `detailEp=${episode}`)
