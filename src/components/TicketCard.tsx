@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
-import { Star, Share2, Download, Send, Play } from "lucide-react";
+import { Star, Share2, Download, Send, Play, Users, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PopcornIcon, FilmReelIcon, StarBurstIcon } from "@/components/icons/CinemaIcons";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 
 const colorThemes: Record<string, { bg: string; accent: string; text: string; border: string }> = {
@@ -51,7 +54,10 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
   const theme = colorThemes[ticket.colorTheme || "gold"] || colorThemes.gold;
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const [creatingRoom, setCreatingRoom] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const canWatch = !!ticket.embedUrl;
 
@@ -60,6 +66,30 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
     navigate(
       `/watch?url=${encodeURIComponent(ticket.embedUrl!)}&title=${encodeURIComponent(ticket.movieTitle)}${ticket.totalSeasons ? `&seasons=${ticket.totalSeasons}` : ""}`
     );
+  };
+
+  const handleWatchTogether = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!canWatch || !user || !ticket.movieId) return;
+    setCreatingRoom(true);
+    try {
+      const { data, error } = await supabase
+        .from("watch_rooms")
+        .insert({
+          host_id: user.id,
+          movie_id: ticket.movieId,
+          movie_title: ticket.movieTitle,
+          embed_url: ticket.embedUrl,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      toast({ title: "🎬 Room created!", description: "Share the invite link with friends" });
+      navigate(`/watch-together?room=${data.id}`);
+    } catch (err: any) {
+      toast({ title: "Couldn't create room", description: err.message, variant: "destructive" });
+    }
+    setCreatingRoom(false);
   };
 
   const handleWebShare = async () => {
@@ -227,6 +257,18 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
               <Play className="w-3 h-3 mr-1" />
               Watch Now
             </Button>
+           )}
+          {canWatch && ticket.movieId && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs rounded-full"
+              onClick={handleWatchTogether}
+              disabled={creatingRoom}
+            >
+              {creatingRoom ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Users className="w-3 h-3 mr-1" />}
+              Watch Together
+            </Button>
           )}
           <Button
             variant="outline"
@@ -267,6 +309,11 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
           {canWatch && (
             <Button variant="warm" size="sm" className="text-[10px] h-7 px-2" onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}>
               <Play className="w-3 h-3 mr-0.5" /> Watch
+            </Button>
+          )}
+          {canWatch && ticket.movieId && (
+            <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleWatchTogether} disabled={creatingRoom}>
+              {creatingRoom ? <Loader2 className="w-3 h-3 mr-0.5 animate-spin" /> : <Users className="w-3 h-3 mr-0.5" />} Together
             </Button>
           )}
           <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleDownload} disabled={downloading}>
