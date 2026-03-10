@@ -106,9 +106,6 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
             isNew && "ring-2 ring-accent ring-offset-2 ring-offset-background"
           )}
         >
-          "relative rounded-2xl overflow-hidden shadow-2xl",
-          isNew && "ring-2 ring-accent ring-offset-2 ring-offset-background"
-        )}>
           {/* Main ticket body */}
           <div className={cn("bg-gradient-to-br p-6 relative", theme.bg)}>
             {/* Top decorative strip */}
