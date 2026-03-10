@@ -68,6 +68,30 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
     );
   };
 
+  const handleWatchTogether = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!canWatch || !user || !ticket.movieId) return;
+    setCreatingRoom(true);
+    try {
+      const { data, error } = await supabase
+        .from("watch_rooms")
+        .insert({
+          host_id: user.id,
+          movie_id: ticket.movieId,
+          movie_title: ticket.movieTitle,
+          embed_url: ticket.embedUrl,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      toast({ title: "🎬 Room created!", description: "Share the invite link with friends" });
+      navigate(`/watch-together?room=${data.id}`);
+    } catch (err: any) {
+      toast({ title: "Couldn't create room", description: err.message, variant: "destructive" });
+    }
+    setCreatingRoom(false);
+  };
+
   const handleWebShare = async () => {
     if (navigator.share) {
       try {
