@@ -4,20 +4,70 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Ticket, BookHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-function toEmbedUrl(url: string): string {
-  // YouTube watch URLs → embed
-  const ytWatch = url.match(/(?:youtube\.com\/watch\?.*v=|youtu\.be\/)([\w-]{11})/);
-  if (ytWatch) {
-    const params = new URL(url.startsWith("http") ? url : `https://${url}`).searchParams;
-    const t = params.get("t");
-    return `https://www.youtube.com/embed/${ytWatch[1]}${t ? `?start=${parseInt(t)}` : ""}`;
-  }
-  // YouTube shorts → embed
-  const ytShorts = url.match(/youtube\.com\/shorts\/([\w-]{11})/);
-  if (ytShorts) return `https://www.youtube.com/embed/${ytShorts[1]}`;
-  // Already an embed URL or other URL — return as-is
-  return url;
+function ensureHttp(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/^\/\//.test(trimmed)) return `https:${trimmed}`;
+  return `https://${trimmed}`;
 }
+
+function extractYouTubeId(url: string): { id: string; start?: number } | null {
+  // Matches youtu.be/ID, youtube.com/watch?v=ID, /embed/ID, /shorts/ID, /v/ID, /live/ID
+  const patterns = [
+    /(?:youtu\.be\/)([\w-]{11})/i,
+    /(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/|shorts\/|live\/))([\w-]{11})/i,
+  ];
+  for (const re of patterns) {
+    const m = url.match(re);
+    if (m) {
+      let start: number | undefined;
+      try {
+        const u = new URL(ensureHttp(url));
+        const t = u.searchParams.get("t") || u.searchParams.get("start");
+        if (t) {
+          const parsed = /^(\d+)$/.test(t) ? parseInt(t) : 0;
+          if (parsed > 0) start = parsed;
+        }
+      } catch {}
+      return { id: m[1], start };
+    }
+  }
+  return null;
+}
+
+function toEmbedUrl(url: string): string {
+  const clean = ensureHttp(url);
+  if (!clean) return "";
+
+  // YouTube → embed with safe params
+  const yt = extractYouTubeId(clean);
+  if (yt) {
+    const params = new URLSearchParams({
+      rel: "0",
+      modestbranding: "1",
+      playsinline: "1",
+    });
+    if (yt.start) params.set("start", String(yt.start));
+    return `https://www.youtube.com/embed/${yt.id}?${params.toString()}`;
+  }
+
+  // Vimeo → player
+  const vimeo = clean.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+
+  // Dailymotion
+  const dm = clean.match(/dailymotion\.com\/(?:video|embed\/video)\/([a-z0-9]+)/i);
+  if (dm) return `https://www.dailymotion.com/embed/video/${dm[1]}`;
+
+  // Direct video file → let browser play via <video>
+  return clean;
+}
+
+function isDirectVideo(url: string): boolean {
+  return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
+}
+
 
 export default function Watch() {
   const [searchParams] = useSearchParams();
