@@ -71,5 +71,16 @@ export function useMovies() {
     return data;
   };
 
-  return { movies, loading, addMovie, refetch: fetchMovies };
+  const deleteMovie = async (id: string) => {
+    const { error } = await supabase.from("movies").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Couldn't delete movie", description: error.message, variant: "destructive" });
+      return false;
+    }
+    setMovies((prev) => prev.filter((m) => m.id !== id));
+    toast({ title: "🗑️ Movie removed", description: "The movie has been deleted from the collection." });
+    return true;
+  };
+
+  return { movies, loading, addMovie, deleteMovie, refetch: fetchMovies };
 }
