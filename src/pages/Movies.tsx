@@ -1,9 +1,20 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users, Sparkles, Wand2, Loader2 } from "lucide-react";
+import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users, Sparkles, Wand2, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useMovies, type Movie } from "@/hooks/useMovies";
 import { useTickets } from "@/hooks/useTickets";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +48,7 @@ interface Recommendation {
 }
 
 export default function Movies() {
-  const { movies, loading, addMovie } = useMovies();
+  const { movies, loading, addMovie, deleteMovie } = useMovies();
   const { hasTicketForMovie } = useTickets();
   const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
