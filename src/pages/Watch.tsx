@@ -3,21 +3,9 @@ import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Ticket, BookHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toEmbedUrl, isDirectVideo } from "@/lib/embedUrl";
 
-function toEmbedUrl(url: string): string {
-  // YouTube watch URLs → embed
-  const ytWatch = url.match(/(?:youtube\.com\/watch\?.*v=|youtu\.be\/)([\w-]{11})/);
-  if (ytWatch) {
-    const params = new URL(url.startsWith("http") ? url : `https://${url}`).searchParams;
-    const t = params.get("t");
-    return `https://www.youtube.com/embed/${ytWatch[1]}${t ? `?start=${parseInt(t)}` : ""}`;
-  }
-  // YouTube shorts → embed
-  const ytShorts = url.match(/youtube\.com\/shorts\/([\w-]{11})/);
-  if (ytShorts) return `https://www.youtube.com/embed/${ytShorts[1]}`;
-  // Already an embed URL or other URL — return as-is
-  return url;
-}
+
 
 export default function Watch() {
   const [searchParams] = useSearchParams();
@@ -121,17 +109,29 @@ export default function Watch() {
       )}
 
       {/* Video embed */}
-      <div className="w-full" style={{ height: seasons > 0 ? "calc(100vh - 168px)" : "calc(100vh - 120px)" }}>
-        <iframe
-          key={currentUrl}
-          src={currentUrl}
-          title={`${title} S${season}E${episode}`}
-          className="w-full h-full border-0"
-          allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-        />
+      <div className="w-full bg-black" style={{ height: seasons > 0 ? "calc(100vh - 168px)" : "calc(100vh - 120px)" }}>
+        {isDirectVideo(currentUrl) ? (
+          <video
+            key={currentUrl}
+            src={currentUrl}
+            controls
+            autoPlay
+            playsInline
+            className="w-full h-full bg-black"
+          />
+        ) : (
+          <iframe
+            key={currentUrl}
+            src={currentUrl}
+            title={`${title} S${season}E${episode}`}
+            className="w-full h-full border-0"
+            allowFullScreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        )}
       </div>
+
 
       {/* Bottom bar */}
       <div className="px-4 py-2 bg-card/10 backdrop-blur-sm border-t border-border/20 text-center">

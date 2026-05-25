@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { toEmbedUrl, isDirectVideo } from "@/lib/embedUrl";
 
 interface RoomMessage {
   id: string;
@@ -192,8 +193,7 @@ export default function WatchRoom() {
   }
 
   const embedUrl = room.embed_url;
-  const seasons = 0; // Could extend to pass seasons
-  const currentUrl = embedUrl;
+  const currentUrl = embedUrl ? toEmbedUrl(embedUrl) : "";
 
   return (
     <div className="min-h-screen bg-foreground/95 flex flex-col">
@@ -235,16 +235,28 @@ export default function WatchRoom() {
       {/* Main content */}
       <div className="flex flex-1 min-h-0">
         {/* Video */}
-        <div className={`flex-1 transition-all ${chatOpen ? "mr-0" : ""}`}>
+        <div className={`flex-1 transition-all ${chatOpen ? "mr-0" : ""} bg-black`}>
           {currentUrl ? (
-            <iframe
-              src={currentUrl}
-              title={room.movie_title}
-              className="w-full h-full border-0"
-              allowFullScreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
+            isDirectVideo(currentUrl) ? (
+              <video
+                key={currentUrl}
+                src={currentUrl}
+                controls
+                autoPlay
+                playsInline
+                className="w-full h-full bg-black"
+              />
+            ) : (
+              <iframe
+                key={currentUrl}
+                src={currentUrl}
+                title={room.movie_title}
+                className="w-full h-full border-0"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            )
           ) : (
             <div className="flex items-center justify-center h-full text-primary-foreground/50">
               <p>No embed URL available for this movie</p>
