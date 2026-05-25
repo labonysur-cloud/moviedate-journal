@@ -171,17 +171,29 @@ export default function Watch() {
       )}
 
       {/* Video embed */}
-      <div className="w-full" style={{ height: seasons > 0 ? "calc(100vh - 168px)" : "calc(100vh - 120px)" }}>
-        <iframe
-          key={currentUrl}
-          src={currentUrl}
-          title={`${title} S${season}E${episode}`}
-          className="w-full h-full border-0"
-          allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-        />
+      <div className="w-full bg-black" style={{ height: seasons > 0 ? "calc(100vh - 168px)" : "calc(100vh - 120px)" }}>
+        {isDirectVideo(currentUrl) ? (
+          <video
+            key={currentUrl}
+            src={currentUrl}
+            controls
+            autoPlay
+            playsInline
+            className="w-full h-full bg-black"
+          />
+        ) : (
+          <iframe
+            key={currentUrl}
+            src={currentUrl}
+            title={`${title} S${season}E${episode}`}
+            className="w-full h-full border-0"
+            allowFullScreen
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        )}
       </div>
+
 
       {/* Bottom bar */}
       <div className="px-4 py-2 bg-card/10 backdrop-blur-sm border-t border-border/20 text-center">
