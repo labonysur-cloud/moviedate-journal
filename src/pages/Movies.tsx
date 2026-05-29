@@ -152,26 +152,36 @@ export default function Movies() {
     });
     setShowRecs(false);
     setShowForm(true);
-    // Ask AI for poster + best free watch link, merge in
+    // In parallel: ask AI for metadata + server-side search for a REAL free link
     try {
-      const { data, error } = await supabase.functions.invoke("movie-ai", {
-        body: { action: "autofill", title: rec.title },
+      const [autofillRes, linkRes] = await Promise.all([
+        supabase.functions.invoke("movie-ai", {
+          body: { action: "autofill", title: rec.title },
+        }),
+        supabase.functions.invoke("movie-ai", {
+          body: { action: "find_free_link", title: rec.title, year: rec.year },
+        }),
+      ]);
+      const meta = !autofillRes.error && !autofillRes.data?.error ? autofillRes.data : null;
+      const link = !linkRes.error && linkRes.data?.embed_url ? linkRes.data : null;
+      const verifiedEmbed = link?.embed_url || meta?.embed_url || "";
+
+      setForm((prev) => ({
+        ...prev,
+        poster: meta?.poster || prev.poster,
+        embedUrl: verifiedEmbed || prev.embedUrl,
+        description: prev.description || meta?.description || "",
+        totalSeasons: meta?.total_seasons ? String(meta.total_seasons) : prev.totalSeasons,
+      }));
+
+      toast({
+        title: `${rec.emoji} Ready to add!`,
+        description: verifiedEmbed
+          ? link?.source === "archive.org"
+            ? "Ad-free Internet Archive link attached — review and Add"
+            : "Free link found — review and Add"
+          : "No free link found automatically — paste one or add manually",
       });
-      if (!error && data && !data.error) {
-        setForm((prev) => ({
-          ...prev,
-          poster: data.poster || prev.poster,
-          embedUrl: data.embed_url || prev.embedUrl,
-          description: prev.description || data.description || "",
-          totalSeasons: data.total_seasons ? String(data.total_seasons) : prev.totalSeasons,
-        }));
-        toast({
-          title: `${rec.emoji} Ready to add!`,
-          description: data.embed_url
-            ? "Free link attached — review and tap Add to Collection"
-            : "Review the details, paste a link if you have one, then Add",
-        });
-      }
     } catch {
       // non-fatal — user can still edit & add
     }
