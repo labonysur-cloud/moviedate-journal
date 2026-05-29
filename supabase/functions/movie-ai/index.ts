@@ -8,10 +8,76 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // Helper: find a real free playable link for a title.
+  // Tries Internet Archive first (ad-free, public domain), then YouTube full-movie search.
+  async function findFreeLink(title: string, year?: string): Promise<{ embed_url: string; source: string } | null> {
+    const q = `${title} ${year || ""}`.trim();
+    // 1) Internet Archive (movingimage collection) — JSON API
+    try {
+      const archiveUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(
+        `title:(${title}) AND mediatype:(movies)`
+      )}&fl[]=identifier&fl[]=title&fl[]=year&rows=3&page=1&output=json`;
+      const ar = await fetch(archiveUrl, { headers: { "User-Agent": "MovieDate/1.0" } });
+      if (ar.ok) {
+        const aj = await ar.json();
+        const docs: any[] = aj?.response?.docs || [];
+        const best =
+          docs.find((d) => year && String(d.year) === String(year)) || docs[0];
+        if (best?.identifier) {
+          return {
+            embed_url: `https://archive.org/embed/${best.identifier}`,
+            source: "archive.org",
+          };
+        }
+      }
+    } catch (e) {
+      console.error("archive lookup failed", e);
+    }
+    // 2) YouTube search page scrape for first videoId
+    try {
+      const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+        q + " full movie"
+      )}&sp=EgIQAQ%253D%253D`; // sp filter = videos only
+      const yr = await fetch(ytUrl, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      });
+      if (yr.ok) {
+        const html = await yr.text();
+        // Prefer videos with longer duration (likely full movie). Look at all matches and pick first.
+        const matches = [...html.matchAll(/"videoId":"([\w-]{11})"/g)];
+        const seen = new Set<string>();
+        for (const m of matches) {
+          if (seen.has(m[1])) continue;
+          seen.add(m[1]);
+          return {
+            embed_url: `https://www.youtube.com/watch?v=${m[1]}`,
+            source: "youtube",
+          };
+        }
+      }
+    } catch (e) {
+      console.error("youtube lookup failed", e);
+    }
+    return null;
+  }
+
   try {
-    const { action, title, mood, movies, movieTitle, url, booked, journaled, exclude } = await req.json();
+    const { action, title, mood, movies, movieTitle, url, booked, journaled, exclude, year } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY && action !== "find_free_link") throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Direct action: just find a free link, no AI call needed
+    if (action === "find_free_link") {
+      const found = await findFreeLink(title || movieTitle || "", year);
+      return new Response(JSON.stringify(found || { embed_url: "", source: "" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
 
     let systemPrompt = "";
     let userPrompt = "";
