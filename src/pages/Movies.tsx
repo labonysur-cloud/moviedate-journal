@@ -104,8 +104,28 @@ export default function Movies() {
     setRecsLoading(true);
     setRecs([]);
     try {
+      // Pull personalization signals in parallel
+      const [ticketsRes, journalRes] = await Promise.all([
+        user
+          ? supabase.from("tickets").select("movie_title, genre").eq("user_id", user.id).limit(30)
+          : Promise.resolve({ data: [] as any[] }),
+        user
+          ? supabase.from("journal_entries").select("movie_title, mood, content").eq("user_id", user.id).limit(20)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const collection = movies.slice(0, 30).map((m) => ({ title: m.title, genre: m.genre, year: m.year }));
+      const exclude = movies.map((m) => m.title);
+
       const { data, error } = await supabase.functions.invoke("movie-ai", {
-        body: { action: "recommend", mood, movies: movies.slice(0, 20) },
+        body: {
+          action: "recommend",
+          mood,
+          movies: collection,
+          booked: ticketsRes.data || [],
+          journaled: journalRes.data || [],
+          exclude,
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
