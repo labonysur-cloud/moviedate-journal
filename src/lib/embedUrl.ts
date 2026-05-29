@@ -55,6 +55,10 @@ export function toEmbedUrl(url: string): string {
   const dm = clean.match(/dailymotion\.com\/(?:video|embed\/video)\/([a-z0-9]+)/i);
   if (dm) return `https://www.dailymotion.com/embed/video/${dm[1]}`;
 
+  // Internet Archive — ad-free public domain films
+  const ia = clean.match(/archive\.org\/(?:details|embed)\/([^/?#]+)/i);
+  if (ia) return `https://archive.org/embed/${ia[1]}`;
+
   return clean;
 }
 
