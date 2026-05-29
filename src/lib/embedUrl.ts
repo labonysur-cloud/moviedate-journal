@@ -39,9 +39,14 @@ export function toEmbedUrl(url: string): string {
       rel: "0",
       modestbranding: "1",
       playsinline: "1",
+      iv_load_policy: "3", // hide video annotations
+      fs: "1",
+      disablekb: "0",
+      color: "white",
     });
     if (yt.start) params.set("start", String(yt.start));
-    return `https://www.youtube.com/embed/${yt.id}?${params.toString()}`;
+    // youtube-nocookie reduces tracking & some ad targeting
+    return `https://www.youtube-nocookie.com/embed/${yt.id}?${params.toString()}`;
   }
 
   const vimeo = clean.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
