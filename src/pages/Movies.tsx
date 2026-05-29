@@ -118,14 +118,43 @@ export default function Movies() {
 
   const handleAddRec = async (rec: Recommendation) => {
     setAddingRec(rec.title);
-    await addMovie({
+    // Pre-fill form with recommendation data immediately
+    setForm({
       title: rec.title,
       genre: rec.genre,
       year: rec.year,
       description: rec.description,
+      poster: "",
+      watchUrl: "",
+      embedUrl: "",
       rating: rec.rating,
+      totalSeasons: "",
     });
-    toast({ title: `${rec.emoji} Added!`, description: `"${rec.title}" added to your collection` });
+    setShowRecs(false);
+    setShowForm(true);
+    // Ask AI for poster + best free watch link, merge in
+    try {
+      const { data, error } = await supabase.functions.invoke("movie-ai", {
+        body: { action: "autofill", title: rec.title },
+      });
+      if (!error && data && !data.error) {
+        setForm((prev) => ({
+          ...prev,
+          poster: data.poster || prev.poster,
+          embedUrl: data.embed_url || prev.embedUrl,
+          description: prev.description || data.description || "",
+          totalSeasons: data.total_seasons ? String(data.total_seasons) : prev.totalSeasons,
+        }));
+        toast({
+          title: `${rec.emoji} Ready to add!`,
+          description: data.embed_url
+            ? "Free link attached — review and tap Add to Collection"
+            : "Review the details, paste a link if you have one, then Add",
+        });
+      }
+    } catch {
+      // non-fatal — user can still edit & add
+    }
     setAddingRec(null);
   };
 
