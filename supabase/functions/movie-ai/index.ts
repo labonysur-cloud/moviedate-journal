@@ -74,19 +74,35 @@ Figure out what movie/show this links to and return its details. Use the origina
       }];
       toolChoice = { type: "function", function: { name: "return_movie_details" } };
     } else if (action === "recommend") {
-      systemPrompt = `You are a cozy movie night recommendation AI. Suggest movies based on mood and what friends have already watched. Be warm and enthusiastic! Return ONLY valid JSON.`;
-      const watchedList = (movies || []).map((m: any) => `${m.title} (${m.genre})`).join(", ");
-      userPrompt = `Mood: ${mood || "anything fun"}
-Already watched: ${watchedList || "nothing yet"}
+      systemPrompt = `You are a cozy, perceptive movie-night recommendation AI. You personalize suggestions based on the user's taste signals: movies in their collection, movies they actually booked tickets for (a stronger like signal), and journal entries about movies they reflected on (strongest signal — pay attention to their mood and what they wrote). Infer their favorite genres, tones, eras, and themes. Never recommend something already in their collection or excluded. Be warm, specific, and explain WHY each pick fits THEM. Return ONLY valid JSON.`;
+      const collection = (movies || []).map((m: any) => `${m.title} (${m.genre}, ${m.year})`).join(", ");
+      const bookedList = (booked || []).map((b: any) => `${b.movie_title}${b.genre ? ` (${b.genre})` : ""}`).join(", ");
+      const journalList = (journaled || [])
+        .map((j: any) => `${j.movie_title}${j.mood ? ` — mood: ${j.mood}` : ""}${j.content ? ` — note: "${String(j.content).slice(0, 160)}"` : ""}`)
+        .join(" | ");
+      const excludeList = (exclude || []).join(", ");
+      userPrompt = `Mood request: ${mood || "surprise me with something I'd love"}
 
-Suggest 5 movies/shows. For each, include:
+=== Their collection (already added) ===
+${collection || "nothing yet"}
+
+=== Movies they booked tickets for (liked enough to plan a night) ===
+${bookedList || "none yet"}
+
+=== Journal entries (deepest taste signal) ===
+${journalList || "none yet"}
+
+=== Do NOT suggest any of these (already in collection or excluded) ===
+${excludeList || collection || "—"}
+
+Suggest exactly 5 movies/shows tailored to THIS person. Mix 1-2 safe-bet matches with 2-3 thoughtful discoveries adjacent to their taste. For each item:
 {
   "recommendations": [
     {
       "title": "movie title",
       "genre": "genre",
       "year": "year",
-      "description": "why they'd love it (1-2 sentences, warm tone)",
+      "description": "Why YOU (referring to them) would love this, based on a specific signal from their history (1-2 warm sentences).",
       "rating": "rating out of 10",
       "emoji": "fitting emoji"
     }
