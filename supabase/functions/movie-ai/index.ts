@@ -48,7 +48,7 @@ Figure out what movie/show this links to and return its details. Use the origina
       }];
       toolChoice = { type: "function", function: { name: "return_movie_details" } };
     } else if (action === "autofill") {
-      systemPrompt = `You are a movie database expert. Given a movie or TV show title, return accurate details. If you're unsure, make educated guesses.`;
+      systemPrompt = `You are a movie database expert. Given a movie or TV show title, return accurate details. If you're unsure, make educated guesses. When possible, also suggest a real, publicly available free YouTube watch URL for the full movie or official trailer.`;
       userPrompt = `Look up this movie/show: "${title}"`;
       tools = [{
         type: "function",
@@ -65,6 +65,7 @@ Figure out what movie/show this links to and return its details. Use the origina
               rating: { type: "string", description: "IMDb-style rating out of 10" },
               poster: { type: "string", description: "A real poster image URL if known, or empty string" },
               total_seasons: { type: ["number", "null"], description: "null for movies, number for TV shows" },
+              embed_url: { type: "string", description: "Best known free public YouTube URL for the full movie if it exists on YouTube, otherwise the official trailer URL on YouTube. Empty string if unknown. Must be a real youtube.com or youtu.be link you are confident exists." },
             },
             required: ["title", "genre", "year", "description", "rating"],
             additionalProperties: false,
