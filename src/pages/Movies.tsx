@@ -164,24 +164,40 @@ export default function Movies() {
       ]);
       const meta = !autofillRes.error && !autofillRes.data?.error ? autofillRes.data : null;
       const link = !linkRes.error && linkRes.data?.embed_url ? linkRes.data : null;
-      const verifiedEmbed = link?.embed_url || meta?.embed_url || "";
+
+      // Priority: Hindi-dubbed. If not available, ask user before attaching original (with subs).
+      let chosenEmbed = "";
+      let toastDesc = "No free link found automatically — paste one or add manually";
+      if (link?.dubbed) {
+        chosenEmbed = link.embed_url;
+        toastDesc = "🇮🇳 Hindi-dubbed free link attached — review and Add";
+      } else if (link?.embed_url) {
+        const ok = window.confirm(
+          `No Hindi-dubbed version of "${rec.title}" was found.\n\nWould you like to add the original version with English / Bengali subtitles instead?`
+        );
+        if (ok) {
+          chosenEmbed = link.embed_url;
+          toastDesc =
+            link.source === "archive.org"
+              ? "Original version (ad-free Archive.org, subtitles available) attached"
+              : "Original version with subtitles attached — review and Add";
+        } else {
+          toastDesc = "Skipped link — you can paste one manually";
+        }
+      } else if (meta?.embed_url) {
+        chosenEmbed = meta.embed_url;
+        toastDesc = "Trailer/free link attached — review and Add";
+      }
 
       setForm((prev) => ({
         ...prev,
         poster: meta?.poster || prev.poster,
-        embedUrl: verifiedEmbed || prev.embedUrl,
+        embedUrl: chosenEmbed || prev.embedUrl,
         description: prev.description || meta?.description || "",
         totalSeasons: meta?.total_seasons ? String(meta.total_seasons) : prev.totalSeasons,
       }));
 
-      toast({
-        title: `${rec.emoji} Ready to add!`,
-        description: verifiedEmbed
-          ? link?.source === "archive.org"
-            ? "Ad-free Internet Archive link attached — review and Add"
-            : "Free link found — review and Add"
-          : "No free link found automatically — paste one or add manually",
-      });
+      toast({ title: `${rec.emoji} Ready to add!`, description: toastDesc });
     } catch {
       // non-fatal — user can still edit & add
     }
