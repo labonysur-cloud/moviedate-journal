@@ -10,34 +10,9 @@ serve(async (req) => {
 
   // Helper: find a real free playable link for a title.
   // Tries Internet Archive first (ad-free, public domain), then YouTube full-movie search.
-  async function findFreeLink(title: string, year?: string): Promise<{ embed_url: string; source: string } | null> {
-    const q = `${title} ${year || ""}`.trim();
-    // 1) Internet Archive (movingimage collection) — JSON API
+  async function searchYouTube(query: string): Promise<string | null> {
     try {
-      const archiveUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(
-        `title:(${title}) AND mediatype:(movies)`
-      )}&fl[]=identifier&fl[]=title&fl[]=year&rows=3&page=1&output=json`;
-      const ar = await fetch(archiveUrl, { headers: { "User-Agent": "MovieDate/1.0" } });
-      if (ar.ok) {
-        const aj = await ar.json();
-        const docs: any[] = aj?.response?.docs || [];
-        const best =
-          docs.find((d) => year && String(d.year) === String(year)) || docs[0];
-        if (best?.identifier) {
-          return {
-            embed_url: `https://archive.org/embed/${best.identifier}`,
-            source: "archive.org",
-          };
-        }
-      }
-    } catch (e) {
-      console.error("archive lookup failed", e);
-    }
-    // 2) YouTube search page scrape for first videoId
-    try {
-      const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
-        q + " full movie"
-      )}&sp=EgIQAQ%253D%253D`; // sp filter = videos only
+      const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=EgIQAQ%253D%253D`;
       const yr = await fetch(ytUrl, {
         headers: {
           "User-Agent":
@@ -45,22 +20,62 @@ serve(async (req) => {
           "Accept-Language": "en-US,en;q=0.9",
         },
       });
-      if (yr.ok) {
-        const html = await yr.text();
-        // Prefer videos with longer duration (likely full movie). Look at all matches and pick first.
-        const matches = [...html.matchAll(/"videoId":"([\w-]{11})"/g)];
-        const seen = new Set<string>();
-        for (const m of matches) {
-          if (seen.has(m[1])) continue;
-          seen.add(m[1]);
-          return {
-            embed_url: `https://www.youtube.com/watch?v=${m[1]}`,
-            source: "youtube",
-          };
-        }
-      }
+      if (!yr.ok) return null;
+      const html = await yr.text();
+      const m = html.match(/"videoId":"([\w-]{11})"/);
+      return m ? `https://www.youtube.com/watch?v=${m[1]}` : null;
     } catch (e) {
       console.error("youtube lookup failed", e);
+      return null;
+    }
+  }
+
+  async function searchArchive(query: string): Promise<string | null> {
+    try {
+      const archiveUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(query)}&fl[]=identifier&rows=1&page=1&output=json`;
+      const ar = await fetch(archiveUrl, { headers: { "User-Agent": "MovieDate/1.0" } });
+      if (!ar.ok) return null;
+      const aj = await ar.json();
+      const id = aj?.response?.docs?.[0]?.identifier;
+      return id ? `https://archive.org/embed/${id}` : null;
+    } catch (e) {
+      console.error("archive lookup failed", e);
+      return null;
+    }
+  }
+
+  // Find a real free playable link. Prioritizes Hindi-dubbed version, then falls back
+  // to original with Bengali/English subtitles. Returns language + dubbed flag so the
+  // client can confirm with the user when no Hindi dub exists.
+  async function findFreeLink(
+    title: string,
+    year?: string,
+  ): Promise<{ embed_url: string; source: string; language: string; dubbed: boolean } | null> {
+    const base = `${title} ${year || ""}`.trim();
+
+    // 1) Hindi dubbed (priority)
+    const hindiQueries = [
+      `${base} hindi dubbed full movie`,
+      `${base} full movie hindi dubbed`,
+      `${title} hindi dubbed`,
+    ];
+    for (const q of hindiQueries) {
+      const yt = await searchYouTube(q);
+      if (yt) return { embed_url: yt, source: "youtube", language: "hindi", dubbed: true };
+    }
+
+    // 2) Original with subtitles — try Internet Archive (often has subtitles) then YouTube
+    const archive = await searchArchive(`title:(${title}) AND mediatype:(movies)`);
+    if (archive) return { embed_url: archive, source: "archive.org", language: "original", dubbed: false };
+
+    const originalQueries = [
+      `${base} full movie english subtitles`,
+      `${base} full movie bengali subtitles`,
+      `${base} full movie`,
+    ];
+    for (const q of originalQueries) {
+      const yt = await searchYouTube(q);
+      if (yt) return { embed_url: yt, source: "youtube", language: "original", dubbed: false };
     }
     return null;
   }
