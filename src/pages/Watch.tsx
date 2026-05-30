@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Ticket, BookHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toEmbedUrl, isDirectVideo } from "@/lib/embedUrl";
+import { toEmbedUrl, isDirectVideo, isExternalOnly } from "@/lib/embedUrl";
 
 
 
