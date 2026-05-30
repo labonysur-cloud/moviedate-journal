@@ -8,8 +8,8 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Helper: find a real free playable link for a title.
-  // Tries Internet Archive first (ad-free, public domain), then YouTube full-movie search.
+  // Helper: find a real free playable link for a title from legal free platforms.
+  // Searches Tubi, Freevee, Pluto TV, Plex, YouTube Movies, Internet Archive, etc.
   async function searchYouTube(query: string): Promise<string | null> {
     try {
       const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=EgIQAQ%253D%253D`;
@@ -44,9 +44,34 @@ serve(async (req) => {
     }
   }
 
-  // Find a real free playable link. Prioritizes Hindi-dubbed version, then falls back
-  // to original with Bengali/English subtitles. Returns language + dubbed flag so the
-  // client can confirm with the user when no Hindi dub exists.
+  // Search a free streaming platform via DuckDuckGo HTML (no API key needed).
+  // Returns the first result URL matching the given host pattern.
+  async function searchPlatform(query: string, hostPattern: RegExp): Promise<string | null> {
+    try {
+      const r = await fetch(`https://duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+        },
+      });
+      if (!r.ok) return null;
+      const html = await r.text();
+      const linkRe = /uddg=([^"&]+)/g;
+      let m: RegExpExecArray | null;
+      while ((m = linkRe.exec(html)) !== null) {
+        const decoded = decodeURIComponent(m[1]);
+        if (hostPattern.test(decoded)) return decoded;
+      }
+      const direct = html.match(new RegExp(`https?://[^"'\\s]*${hostPattern.source}[^"'\\s]*`, "i"));
+      return direct ? direct[0] : null;
+    } catch (e) {
+      console.error("platform search failed", e);
+      return null;
+    }
+  }
+
+  // Find a real free playable link. Hindi-dubbed first, then legal free platforms
+  // (Tubi, Freevee, Pluto TV, Plex, YouTube Movies), then Internet Archive, then YouTube.
   async function findFreeLink(
     title: string,
     year?: string,
@@ -64,10 +89,24 @@ serve(async (req) => {
       if (yt) return { embed_url: yt, source: "youtube", language: "hindi", dubbed: true };
     }
 
-    // 2) Original with subtitles — try Internet Archive (often has subtitles) then YouTube
+    // 2) Free legal streaming platforms
+    const platforms: Array<{ name: string; pattern: RegExp; query: string }> = [
+      { name: "tubi", pattern: /tubitv\.com\/(movies|tv-shows)\//i, query: `${base} site:tubitv.com` },
+      { name: "freevee", pattern: /amazon\.com\/.*(freevee|gp\/video)/i, query: `${base} watch free Amazon Freevee` },
+      { name: "pluto", pattern: /pluto\.tv\/.*\/(movies|on-demand)\//i, query: `${base} site:pluto.tv` },
+      { name: "plex", pattern: /watch\.plex\.tv\/(movie|show)\//i, query: `${base} site:watch.plex.tv` },
+      { name: "youtube_movies", pattern: /youtube\.com\/(watch|movies)/i, query: `${base} full movie site:youtube.com/movies` },
+    ];
+    for (const p of platforms) {
+      const link = await searchPlatform(p.query, p.pattern);
+      if (link) return { embed_url: link, source: p.name, language: "original", dubbed: false };
+    }
+
+    // 3) Internet Archive
     const archive = await searchArchive(`title:(${title}) AND mediatype:(movies)`);
     if (archive) return { embed_url: archive, source: "archive.org", language: "original", dubbed: false };
 
+    // 4) Generic YouTube fallback
     const originalQueries = [
       `${base} full movie english subtitles`,
       `${base} full movie bengali subtitles`,

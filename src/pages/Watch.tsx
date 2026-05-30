@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Ticket, BookHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toEmbedUrl, isDirectVideo } from "@/lib/embedUrl";
+import { toEmbedUrl, isDirectVideo, isExternalOnly } from "@/lib/embedUrl";
 
 
 
@@ -110,7 +110,18 @@ export default function Watch() {
 
       {/* Video embed */}
       <div className="w-full bg-black" style={{ height: seasons > 0 ? "calc(100vh - 168px)" : "calc(100vh - 120px)" }}>
-        {isDirectVideo(currentUrl) ? (
+        {isExternalOnly(currentUrl) ? (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-center px-6">
+            <p className="text-primary-foreground/80 font-body max-w-md">
+              This title is hosted on a free streaming platform that doesn't allow in-app playback.
+              Click below to watch it free on the source platform.
+            </p>
+            <a href={currentUrl} target="_blank" rel="noopener noreferrer">
+              <Button variant="ticket" size="lg">Watch free on source platform</Button>
+            </a>
+            <p className="text-xs text-primary-foreground/40 break-all max-w-md">{currentUrl}</p>
+          </div>
+        ) : isDirectVideo(currentUrl) ? (
           <video
             key={currentUrl}
             src={currentUrl}

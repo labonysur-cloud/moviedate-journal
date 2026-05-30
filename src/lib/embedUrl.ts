@@ -65,3 +65,8 @@ export function toEmbedUrl(url: string): string {
 export function isDirectVideo(url: string): boolean {
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
 }
+
+// Platforms that block iframe embedding (X-Frame-Options) — must open in new tab.
+export function isExternalOnly(url: string): boolean {
+  return /(?:tubitv\.com|pluto\.tv|watch\.plex\.tv|amazon\.com|primevideo\.com|freevee)/i.test(url);
+}
