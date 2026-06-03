@@ -321,6 +321,18 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
         </div>
       )}
 
+      {showActions && compact && (
+        <div className="mt-2">
+          <SourceStatus
+            url={currentEmbedUrl}
+            movieId={ticket.movieId}
+            movieTitle={ticket.movieTitle}
+            year={ticket.year}
+            onLinkUpdated={(u) => setCurrentEmbedUrl(u)}
+          />
+        </div>
+      )}
+
       {/* Compact actions */}
       {showActions && compact && (
         <div className="flex gap-1.5 mt-2 origin-top-left scale-[1.11] flex-wrap">
