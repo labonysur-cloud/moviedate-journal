@@ -11,17 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 import SourceStatus from "@/components/SourceStatus";
 
-const colorThemes: Record<string, { bg: string; accent: string; text: string; border: string }> = {
-  crimson: { bg: "from-red-900 to-red-800", accent: "text-red-300", text: "text-red-50", border: "border-red-700" },
-  gold: { bg: "from-amber-800 to-yellow-900", accent: "text-amber-300", text: "text-amber-50", border: "border-amber-600" },
-  royal: { bg: "from-indigo-900 to-blue-900", accent: "text-blue-300", text: "text-blue-50", border: "border-indigo-700" },
-  emerald: { bg: "from-emerald-900 to-teal-900", accent: "text-emerald-300", text: "text-emerald-50", border: "border-emerald-700" },
-  violet: { bg: "from-purple-900 to-violet-900", accent: "text-violet-300", text: "text-violet-50", border: "border-purple-700" },
-  coral: { bg: "from-orange-800 to-rose-900", accent: "text-orange-300", text: "text-orange-50", border: "border-orange-700" },
-  midnight: { bg: "from-slate-900 to-gray-900", accent: "text-slate-300", text: "text-slate-50", border: "border-slate-700" },
-  blush: { bg: "from-pink-800 to-rose-900", accent: "text-pink-300", text: "text-pink-50", border: "border-pink-700" },
-};
-
 export interface TicketDisplayData {
   id: string;
   movieTitle: string;
@@ -51,8 +40,15 @@ interface TicketCardProps {
   showActions?: boolean;
 }
 
+// Tiny stable hash → tilt so each ticket sits a little differently in the scrapbook
+function tilt(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  const deg = ((h % 5) - 2) * 0.6; // -1.2deg .. 1.2deg
+  return deg;
+}
+
 export default function TicketCard({ ticket, isNew = false, onShareWithFriend, compact = false, showActions = true }: TicketCardProps) {
-  const theme = colorThemes[ticket.colorTheme || "gold"] || colorThemes.gold;
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const [creatingRoom, setCreatingRoom] = useState(false);
@@ -62,6 +58,8 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
   const { toast } = useToast();
 
   const canWatch = !!currentEmbedUrl;
+  const rotate = tilt(ticket.id);
+  const screen = (parseInt(ticket.seat.replace(/\D/g, "") || "1") % 5) + 1;
 
   const handleWatchClick = () => {
     if (!canWatch) return;
@@ -69,9 +67,6 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
       `/watch?url=${encodeURIComponent(currentEmbedUrl!)}&title=${encodeURIComponent(ticket.movieTitle)}${ticket.totalSeasons ? `&seasons=${ticket.totalSeasons}` : ""}`
     );
   };
-
-
-
 
   const handleWatchTogether = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -89,7 +84,7 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
         .select()
         .single();
       if (error) throw error;
-      toast({ title: "🎬 Room created!", description: "Share the invite link with friends" });
+      toast({ title: "Room created", description: "Share the invite link with friends" });
       navigate(`/watch-together?room=${data.id}`);
     } catch (err: any) {
       toast({ title: "Couldn't create room", description: err.message, variant: "destructive" });
@@ -101,8 +96,8 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `🎬 ${ticket.movieTitle} — Cozy Cinema Ticket`,
-          text: `I'm watching ${ticket.movieTitle}! ${ticket.tagline || ""}\n🎫 Seat: ${ticket.seat} | ${ticket.date}`,
+          title: `${ticket.movieTitle} — Cozy Cinema Ticket`,
+          text: `I'm watching ${ticket.movieTitle}! ${ticket.tagline || ""}\nSeat ${ticket.seat} · ${ticket.date}`,
           url: window.location.origin,
         });
       } catch {}
@@ -130,64 +125,111 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
   };
 
   return (
-    <div className={cn("relative", compact && "scale-90 origin-top-left")}>
+    <div className={cn("relative", compact && "scale-95 origin-top-left")}>
       {/* Capturable ticket area */}
-      <div ref={ticketRef}>
+      <div ref={ticketRef} className="relative pt-4 pb-2 px-2">
+        {/* Gingham scrapbook backing */}
         <div
+          className="absolute inset-0 rounded-[28px] bg-gingham opacity-90 shadow-[0_10px_30px_-12px_hsl(var(--primary)/0.35)]"
+          aria-hidden
+        />
+        {/* Washi tape – top left */}
+        <div
+          aria-hidden
+          className="absolute -top-2 left-6 w-20 h-5 rotate-[-8deg] z-20 opacity-90 shadow-md"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, hsl(var(--gold)/0.85) 0 6px, hsl(var(--rose)/0.85) 6px 12px)",
+          }}
+        />
+        {/* Washi tape – bottom right */}
+        <div
+          aria-hidden
+          className="absolute -bottom-1 right-8 w-16 h-4 rotate-[6deg] z-20 opacity-90 shadow-md"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(-45deg, hsl(var(--rose)/0.9) 0 5px, hsl(var(--card)) 5px 10px)",
+          }}
+        />
+
+        {/* Ticket body */}
+        <motion.div
+          style={{ rotate: `${rotate}deg` }}
+          whileHover={canWatch ? { rotate: 0, y: -4 } : { rotate: 0 }}
+          transition={{ type: "spring", stiffness: 180, damping: 16 }}
           onClick={handleWatchClick}
           className={cn(
-            "relative rounded-2xl overflow-hidden shadow-2xl",
-            canWatch && "cursor-pointer hover:shadow-3xl hover:scale-[1.01] transition-transform",
+            "relative z-10 rounded-2xl overflow-hidden shadow-2xl border-[3px] border-[hsl(var(--primary))]",
+            canWatch && "cursor-pointer",
             isNew && "ring-2 ring-accent ring-offset-2 ring-offset-background"
           )}
         >
-          {/* Main ticket body */}
-          <div className={cn("bg-gradient-to-br p-6 relative", theme.bg)}>
-            {/* Top decorative strip */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <StarBurstIcon className={cn("w-5 h-5", theme.accent)} />
-                <span className={cn("text-[10px] uppercase tracking-[0.25em] font-bold", theme.accent)}>
-                  Cozy Cinema
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
+          {/* MAIN — deep maroon body */}
+          <div className="relative bg-[hsl(350_60%_32%)] text-[hsl(10_50%_97%)] p-5">
+            {/* Scallop inner frame */}
+            <div className="absolute inset-2 rounded-xl border border-[hsl(var(--gold)/0.5)] pointer-events-none" />
+
+            {/* Header — stars + brand */}
+            <div className="relative flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5">
                 {[...Array(4)].map((_, i) => (
-                  <Star key={i} className={cn("w-3 h-3 fill-current", theme.accent)} />
+                  <Star key={i} className="w-3 h-3 fill-current text-[hsl(var(--gold))]" />
+                ))}
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.35em] font-bold text-[hsl(var(--gold))]">
+                Cozy Cinema
+              </span>
+              <div className="flex items-center gap-1.5">
+                {[...Array(4)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 fill-current text-[hsl(var(--gold))]" />
                 ))}
               </div>
             </div>
 
-            {/* Movie info section */}
-            <div className="flex gap-4">
-              {ticket.poster && (
-                <div className="w-20 h-28 rounded-lg overflow-hidden border-2 border-white/20 flex-shrink-0 shadow-lg">
+            {/* Movie row */}
+            <div className="relative flex gap-4 items-start">
+              {/* Polaroid poster */}
+              {ticket.poster ? (
+                <div
+                  className="relative shrink-0 bg-[hsl(10_50%_97%)] p-1.5 pb-6 shadow-lg"
+                  style={{ transform: "rotate(-3deg)" }}
+                >
                   <img
                     src={ticket.poster}
                     alt={ticket.movieTitle}
-                    className="w-full h-full object-cover"
+                    className="w-20 h-28 object-cover"
                   />
+                  <span className="absolute bottom-1 left-0 right-0 text-center font-handwritten text-[11px] leading-none text-[hsl(var(--primary))]">
+                    {ticket.year || "now showing"}
+                  </span>
+                  {/* tape on polaroid */}
+                  <div
+                    aria-hidden
+                    className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-3 opacity-80"
+                    style={{ backgroundColor: "hsl(var(--gold)/0.6)" }}
+                  />
+                </div>
+              ) : (
+                <div className="w-20 h-28 bg-[hsl(var(--card))] flex items-center justify-center shrink-0 rotate-[-3deg]">
+                  <FilmReelIcon className="w-10 h-10" />
                 </div>
               )}
 
               <div className="flex-1 min-w-0">
-                <h3 className={cn("font-display text-2xl font-bold leading-tight", theme.text)}>
-                  {ticket.emoji} {ticket.movieTitle}
+                <h3 className="font-display text-2xl font-bold leading-tight uppercase tracking-wide text-[hsl(10_50%_97%)] drop-shadow-[0_1px_0_hsl(350_60%_18%)]">
+                  {ticket.movieTitle}
                 </h3>
                 {ticket.tagline && (
-                  <p className={cn("text-sm italic mt-1 opacity-80", theme.accent)}>
+                  <p className="font-handwritten text-base mt-1 text-[hsl(var(--gold))] leading-snug">
                     "{ticket.tagline}"
                   </p>
                 )}
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full bg-white/10 font-medium", theme.text)}>
+                  <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[hsl(var(--gold)/0.18)] text-[hsl(var(--gold))] font-semibold">
                     {ticket.genre}
                   </span>
-                  {ticket.year && (
-                    <span className={cn("text-xs opacity-60", theme.text)}>{ticket.year}</span>
-                  )}
                   {ticket.rating && (
-                    <span className={cn("text-xs flex items-center gap-0.5", theme.accent)}>
+                    <span className="text-xs flex items-center gap-0.5 text-[hsl(var(--gold))]">
                       <Star className="w-3 h-3 fill-current" /> {ticket.rating}
                     </span>
                   )}
@@ -196,57 +238,53 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
             </div>
 
             {ticket.mood && (
-              <div className={cn("mt-3 text-xs opacity-70 italic", theme.text)}>
-                Mood: {ticket.mood} {ticket.suggestedSnack && `· Pair with: ${ticket.suggestedSnack}`}
+              <div className="relative mt-3 text-[11px] opacity-80 font-handwritten text-[hsl(10_50%_97%)]">
+                mood — {ticket.mood}
+                {ticket.suggestedSnack && <> · pair with {ticket.suggestedSnack.replace(/[\p{Emoji}\u200d]/gu, "").trim()}</>}
               </div>
             )}
           </div>
 
           {/* Perforated divider */}
-          <div className="relative h-6" style={{ backgroundColor: "hsl(30 30% 96%)" }}>
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full" style={{ backgroundColor: "hsl(30 30% 96%)" }} />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-full" style={{ backgroundColor: "hsl(30 30% 96%)" }} />
-            <div className="absolute inset-x-6 top-1/2 border-t-2 border-dashed" style={{ borderColor: "rgba(0,0,0,0.15)" }} />
+          <div className="relative h-6 bg-[hsl(10_50%_97%)]">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-[hsl(350_60%_32%)]" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-full bg-[hsl(350_60%_32%)]" />
+            <div className="absolute inset-x-6 top-1/2 border-t-2 border-dashed border-[hsl(var(--primary)/0.4)]" />
           </div>
 
-          {/* Stub section */}
-          <div className={cn("bg-gradient-to-br px-6 pb-5 pt-2", theme.bg)}>
+          {/* STUB — cream */}
+          <div className="bg-[hsl(10_50%_97%)] text-[hsl(var(--primary))] px-6 pt-3 pb-5">
             <div className="grid grid-cols-4 gap-3 text-center">
-              <div>
-                <p className={cn("text-[9px] uppercase tracking-wider font-bold mb-0.5", theme.accent)}>Date</p>
-                <p className={cn("text-sm font-bold", theme.text)}>{ticket.date}</p>
-              </div>
-              <div>
-                <p className={cn("text-[9px] uppercase tracking-wider font-bold mb-0.5", theme.accent)}>Time</p>
-                <p className={cn("text-sm font-bold", theme.text)}>{ticket.time}</p>
-              </div>
-              <div>
-                <p className={cn("text-[9px] uppercase tracking-wider font-bold mb-0.5", theme.accent)}>Screen</p>
-                <p className={cn("text-sm font-bold", theme.text)}>
-                  {parseInt(ticket.seat.replace(/\D/g, "")) % 5 + 1}
-                </p>
-              </div>
-              <div>
-                <p className={cn("text-[9px] uppercase tracking-wider font-bold mb-0.5", theme.accent)}>Seat</p>
-                <p className={cn("text-sm font-bold", theme.text)}>{ticket.seat}</p>
-              </div>
+              {[
+                { l: "Date", v: ticket.date },
+                { l: "Time", v: ticket.time },
+                { l: "Screen", v: String(screen) },
+                { l: "Seat", v: ticket.seat },
+              ].map((c) => (
+                <div key={c.l}>
+                  <p className="text-[9px] uppercase tracking-[0.18em] font-bold text-[hsl(var(--primary)/0.7)] mb-0.5">
+                    {c.l}
+                  </p>
+                  <p className="text-sm font-display font-bold">{c.v}</p>
+                </div>
+              ))}
             </div>
 
             {ticket.funFact && (
-              <div className={cn("mt-3 text-[10px] text-center opacity-60 italic", theme.text)}>
-                💡 {ticket.funFact}
+              <div className="mt-3 text-[11px] text-center font-handwritten text-[hsl(var(--primary)/0.75)] leading-snug">
+                {ticket.funFact}
               </div>
             )}
 
             <div className="flex items-center justify-center gap-2 mt-3">
-              <PopcornIcon className={cn("w-4 h-4 opacity-40", theme.accent)} />
-              <span className={cn("text-[10px] italic opacity-50", theme.text)}>
-                ✨ Enjoy the show ✨
+              <PopcornIcon className="w-4 h-4 opacity-70" />
+              <span className="text-[11px] font-handwritten text-[hsl(var(--primary)/0.7)]">
+                a little ticket to a cozy night in
               </span>
-              <FilmReelIcon className={cn("w-4 h-4 opacity-40", theme.accent)} />
+              <FilmReelIcon className="w-4 h-4 opacity-70" />
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Free-source status badge */}
@@ -262,60 +300,30 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
         </div>
       )}
 
-      {/* Action buttons — outside the capturable area */}
+      {/* Action buttons */}
       {showActions && !compact && (
         <div className="flex justify-center gap-2 mt-3 flex-wrap">
           {canWatch && (
-            <Button
-              variant="warm"
-              size="sm"
-              className="text-xs rounded-full"
-              onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}
-            >
-              <Play className="w-3 h-3 mr-1" />
-              Watch Now
+            <Button variant="warm" size="sm" className="text-xs rounded-full" onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}>
+              <Play className="w-3 h-3 mr-1" /> Watch Now
             </Button>
-           )}
+          )}
           {canWatch && ticket.movieId && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs rounded-full"
-              onClick={handleWatchTogether}
-              disabled={creatingRoom}
-            >
+            <Button variant="outline" size="sm" className="text-xs rounded-full" onClick={handleWatchTogether} disabled={creatingRoom}>
               {creatingRoom ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Users className="w-3 h-3 mr-1" />}
               Watch Together
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs rounded-full"
-            onClick={handleDownload}
-            disabled={downloading}
-          >
+          <Button variant="outline" size="sm" className="text-xs rounded-full" onClick={handleDownload} disabled={downloading}>
             <Download className="w-3 h-3 mr-1" />
             {downloading ? "Saving..." : "Save as PNG"}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs rounded-full"
-            onClick={handleWebShare}
-          >
-            <Share2 className="w-3 h-3 mr-1" />
-            Share
+          <Button variant="outline" size="sm" className="text-xs rounded-full" onClick={handleWebShare}>
+            <Share2 className="w-3 h-3 mr-1" /> Share
           </Button>
           {onShareWithFriend && (
-            <Button
-              variant="warm"
-              size="sm"
-              className="text-xs rounded-full"
-              onClick={onShareWithFriend}
-            >
-              <Send className="w-3 h-3 mr-1" />
-              Send to Friend
+            <Button variant="warm" size="sm" className="text-xs rounded-full" onClick={onShareWithFriend}>
+              <Send className="w-3 h-3 mr-1" /> Send to Friend
             </Button>
           )}
         </div>
@@ -333,11 +341,10 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
         </div>
       )}
 
-      {/* Compact actions */}
       {showActions && compact && (
-        <div className="flex gap-1.5 mt-2 origin-top-left scale-[1.11] flex-wrap">
+        <div className="flex gap-1.5 mt-2 flex-wrap">
           {canWatch && (
-            <Button variant="warm" size="sm" className="text-[10px] h-7 px-2" onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}>
+            <Button variant="warm" size="sm" className="text-[10px] h-7 px-2 rounded-full" onClick={(e) => { e.stopPropagation(); handleWatchClick(); }}>
               <Play className="w-3 h-3 mr-0.5" /> Watch
             </Button>
           )}
@@ -362,11 +369,11 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
 
       {isNew && (
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-[10px] font-bold px-2 py-1 rounded-full shadow-lg z-10"
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: -12 }}
+          className="absolute -top-3 -right-2 bg-[hsl(var(--gold))] text-[hsl(var(--primary))] font-handwritten text-base px-3 py-1 rounded-full shadow-lg z-30 border-2 border-[hsl(var(--primary))]"
         >
-          ✨ New!
+          just booked!
         </motion.div>
       )}
     </div>
