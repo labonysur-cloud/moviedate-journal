@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
+import SourceStatus from "@/components/SourceStatus";
 
 const colorThemes: Record<string, { bg: string; accent: string; text: string; border: string }> = {
   crimson: { bg: "from-red-900 to-red-800", accent: "text-red-300", text: "text-red-50", border: "border-red-700" },
