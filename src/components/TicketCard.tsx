@@ -56,11 +56,19 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const [creatingRoom, setCreatingRoom] = useState(false);
+  const [currentEmbedUrl, setCurrentEmbedUrl] = useState<string | null>(ticket.embedUrl ?? null);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const canWatch = !!ticket.embedUrl;
+  const canWatch = !!currentEmbedUrl;
+
+  const handleWatchClick = () => {
+    if (!canWatch) return;
+    navigate(
+      `/watch?url=${encodeURIComponent(currentEmbedUrl!)}&title=${encodeURIComponent(ticket.movieTitle)}${ticket.totalSeasons ? `&seasons=${ticket.totalSeasons}` : ""}`
+    );
+  };
 
   const handleWatchClick = () => {
     if (!canWatch) return;
