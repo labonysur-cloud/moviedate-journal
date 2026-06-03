@@ -249,6 +249,19 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
         </div>
       </div>
 
+      {/* Free-source status badge */}
+      {showActions && !compact && (
+        <div className="flex justify-center mt-3">
+          <SourceStatus
+            url={currentEmbedUrl}
+            movieId={ticket.movieId}
+            movieTitle={ticket.movieTitle}
+            year={ticket.year}
+            onLinkUpdated={(u) => setCurrentEmbedUrl(u)}
+          />
+        </div>
+      )}
+
       {/* Action buttons — outside the capturable area */}
       {showActions && !compact && (
         <div className="flex justify-center gap-2 mt-3 flex-wrap">
