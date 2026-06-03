@@ -70,12 +70,8 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
     );
   };
 
-  const handleWatchClick = () => {
-    if (!canWatch) return;
-    navigate(
-      `/watch?url=${encodeURIComponent(ticket.embedUrl!)}&title=${encodeURIComponent(ticket.movieTitle)}${ticket.totalSeasons ? `&seasons=${ticket.totalSeasons}` : ""}`
-    );
-  };
+
+
 
   const handleWatchTogether = async (e: React.MouseEvent) => {
     e.stopPropagation();
