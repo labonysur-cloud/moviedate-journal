@@ -122,12 +122,52 @@ serve(async (req) => {
   try {
     const { action, title, mood, movies, movieTitle, url, booked, journaled, exclude, year } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY && action !== "find_free_link") throw new Error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY && action !== "find_free_link" && action !== "verify_link") throw new Error("LOVABLE_API_KEY is not configured");
 
     // Direct action: just find a free link, no AI call needed
     if (action === "find_free_link") {
       const found = await findFreeLink(title || movieTitle || "", year);
       return new Response(JSON.stringify(found || { embed_url: "", source: "" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify a link is still reachable server-side (bypasses browser CORS).
+    if (action === "verify_link") {
+      if (!url) {
+        return new Response(JSON.stringify({ available: false, status: 0 }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      let available = false;
+      let status = 0;
+      try {
+        const ytMatch = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/|shorts\/))([\w-]{11})/i);
+        let checkUrl = url;
+        if (ytMatch) {
+          checkUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytMatch[1]}&format=json`;
+        }
+        const r = await fetch(checkUrl, {
+          method: "GET",
+          redirect: "follow",
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+          },
+        });
+        status = r.status;
+        available = r.ok;
+        if (available && /archive\.org\/(details|embed)\//i.test(url)) {
+          const body = await r.text();
+          if (/item not available|cannot find the item|page cannot be found/i.test(body)) {
+            available = false;
+          }
+        }
+      } catch (e) {
+        console.error("verify_link failed", e);
+        available = false;
+      }
+      return new Response(JSON.stringify({ available, status }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

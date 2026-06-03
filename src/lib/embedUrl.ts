@@ -70,3 +70,22 @@ export function isDirectVideo(url: string): boolean {
 export function isExternalOnly(url: string): boolean {
   return /(?:tubitv\.com|pluto\.tv|watch\.plex\.tv|amazon\.com|primevideo\.com|freevee)/i.test(url);
 }
+
+// Identify which free source the link comes from (for status badges).
+export function getSourcePlatform(url: string): { key: string; label: string } | null {
+  if (!url) return null;
+  const u = url.toLowerCase();
+  if (/youtube\.com|youtu\.be|youtube-nocookie\.com/.test(u)) {
+    if (/youtube\.com\/movies/.test(u)) return { key: "youtube_movies", label: "YouTube Movies" };
+    return { key: "youtube", label: "YouTube" };
+  }
+  if (/tubitv\.com/.test(u)) return { key: "tubi", label: "Tubi" };
+  if (/pluto\.tv/.test(u)) return { key: "pluto", label: "Pluto TV" };
+  if (/watch\.plex\.tv/.test(u)) return { key: "plex", label: "Plex" };
+  if (/freevee|amazon\.com|primevideo\.com/.test(u)) return { key: "freevee", label: "Freevee" };
+  if (/archive\.org/.test(u)) return { key: "archive", label: "Internet Archive" };
+  if (/vimeo\.com/.test(u)) return { key: "vimeo", label: "Vimeo" };
+  if (/dailymotion\.com/.test(u)) return { key: "dailymotion", label: "Dailymotion" };
+  if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url)) return { key: "direct", label: "Direct video" };
+  return { key: "other", label: "External" };
+}

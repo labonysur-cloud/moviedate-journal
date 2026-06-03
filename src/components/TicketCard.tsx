@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
+import SourceStatus from "@/components/SourceStatus";
 
 const colorThemes: Record<string, { bg: string; accent: string; text: string; border: string }> = {
   crimson: { bg: "from-red-900 to-red-800", accent: "text-red-300", text: "text-red-50", border: "border-red-700" },
@@ -55,18 +56,22 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const [creatingRoom, setCreatingRoom] = useState(false);
+  const [currentEmbedUrl, setCurrentEmbedUrl] = useState<string | null>(ticket.embedUrl ?? null);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const canWatch = !!ticket.embedUrl;
+  const canWatch = !!currentEmbedUrl;
 
   const handleWatchClick = () => {
     if (!canWatch) return;
     navigate(
-      `/watch?url=${encodeURIComponent(ticket.embedUrl!)}&title=${encodeURIComponent(ticket.movieTitle)}${ticket.totalSeasons ? `&seasons=${ticket.totalSeasons}` : ""}`
+      `/watch?url=${encodeURIComponent(currentEmbedUrl!)}&title=${encodeURIComponent(ticket.movieTitle)}${ticket.totalSeasons ? `&seasons=${ticket.totalSeasons}` : ""}`
     );
   };
+
+
+
 
   const handleWatchTogether = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -244,6 +249,19 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
         </div>
       </div>
 
+      {/* Free-source status badge */}
+      {showActions && !compact && (
+        <div className="flex justify-center mt-3">
+          <SourceStatus
+            url={currentEmbedUrl}
+            movieId={ticket.movieId}
+            movieTitle={ticket.movieTitle}
+            year={ticket.year}
+            onLinkUpdated={(u) => setCurrentEmbedUrl(u)}
+          />
+        </div>
+      )}
+
       {/* Action buttons — outside the capturable area */}
       {showActions && !compact && (
         <div className="flex justify-center gap-2 mt-3 flex-wrap">
@@ -300,6 +318,18 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
               Send to Friend
             </Button>
           )}
+        </div>
+      )}
+
+      {showActions && compact && (
+        <div className="mt-2">
+          <SourceStatus
+            url={currentEmbedUrl}
+            movieId={ticket.movieId}
+            movieTitle={ticket.movieTitle}
+            year={ticket.year}
+            onLinkUpdated={(u) => setCurrentEmbedUrl(u)}
+          />
         </div>
       )}
 
