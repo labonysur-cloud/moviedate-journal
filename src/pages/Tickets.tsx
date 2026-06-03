@@ -68,8 +68,7 @@ export default function Tickets() {
               year: movie?.year,
               rating: movie?.rating,
               colorTheme: "coral",
-              emoji: "🎁",
-              tagline: "Shared with you by a friend!",
+              tagline: "a little gift from a friend",
               movieId: t.movie_id,
               embedUrl: movie?.embed_url,
               totalSeasons: movie?.total_seasons,
@@ -124,12 +123,11 @@ export default function Tickets() {
       setAiData(data);
     } catch {
       aiResult = {
-        tagline: "Enjoy the show!",
+        tagline: "enjoy the show",
         color_theme: "gold",
-        emoji: "🎬",
         mood: "cozy",
-        fun_fact: "Movie magic awaits!",
-        suggested_snack: "Popcorn 🍿",
+        fun_fact: "movie magic awaits",
+        suggested_snack: "buttery popcorn",
       };
       setAiData(aiResult);
     }
@@ -158,7 +156,6 @@ export default function Tickets() {
         rating: selectedMovie.rating,
         colorTheme: aiResult?.color_theme || "gold",
         tagline: aiResult?.tagline,
-        emoji: aiResult?.emoji || "🎬",
         mood: aiResult?.mood,
         funFact: aiResult?.fun_fact,
         suggestedSnack: aiResult?.suggested_snack,
@@ -199,7 +196,6 @@ export default function Tickets() {
       year: movie?.year,
       rating: movie?.rating,
       colorTheme: "gold",
-      emoji: "🎬",
       movieId: t.movie_id,
       embedUrl: movie?.embed_url,
       totalSeasons: movie?.total_seasons,
@@ -209,10 +205,23 @@ export default function Tickets() {
   const isLoading = moviesLoading || ticketsLoading;
 
   return (
-    <div className="min-h-screen py-8 sm:py-12 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <h1 className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-2">Movie Tickets</h1>
-        <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Grab your ticket before the show starts! 🎫</p>
+    <div className="min-h-screen py-8 sm:py-12 px-4 relative">
+      <div className="absolute inset-0 bg-polka opacity-40 pointer-events-none" aria-hidden />
+      <div className="container mx-auto max-w-4xl relative">
+        {/* Scrapbook header */}
+        <div className="relative mb-8 sm:mb-10 text-center">
+          <span className="inline-block font-handwritten text-xl text-primary/70 rotate-[-3deg]">a little collection of</span>
+          <h1 className="text-4xl sm:text-5xl font-display font-bold italic text-primary tracking-tight mt-1">
+            Movie Tickets
+          </h1>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="h-px w-12 bg-primary/40" />
+            <PopcornIcon className="w-5 h-5" />
+            <span className="font-handwritten text-base text-foreground/70">stubs from cozy nights in</span>
+            <ClapperboardIcon className="w-5 h-5" />
+            <div className="h-px w-12 bg-primary/40" />
+          </div>
+        </div>
 
         {/* Booking Flow */}
         <AnimatePresence mode="wait">
@@ -222,11 +231,12 @@ export default function Tickets() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="bg-card rounded-2xl p-4 sm:p-6 border border-border mb-8 sm:mb-10"
+              className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-dashed border-primary/40 mb-8 sm:mb-10 shadow-sm relative"
             >
-              <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <span className="absolute -top-3 left-6 bg-gold text-gold-foreground font-handwritten text-sm px-3 py-0.5 rounded-full rotate-[-3deg] shadow">step one</span>
+              <h3 className="font-display text-xl font-semibold italic text-foreground mb-4 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-accent" />
-                Step 1: Choose Your Movie
+                Choose your movie
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {movies.map((movie) => (
@@ -258,7 +268,7 @@ export default function Tickets() {
               {selectedMovieId && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
                   <Button variant="warm" onClick={handleSelectSeat} className="w-full sm:w-auto">
-                    Pick Your Seat <ChevronRight className="w-4 h-4 ml-1" />
+                    Pick your seat <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </motion.div>
               )}
@@ -271,15 +281,16 @@ export default function Tickets() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="bg-card rounded-2xl p-4 sm:p-6 border border-border mb-8 sm:mb-10"
+              className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-dashed border-primary/40 mb-8 sm:mb-10 shadow-sm relative"
             >
-              <h3 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
+              <span className="absolute -top-3 left-6 bg-gold text-gold-foreground font-handwritten text-sm px-3 py-0.5 rounded-full rotate-[-3deg] shadow">step two</span>
+              <h3 className="font-display text-xl font-semibold italic text-foreground mb-1 flex items-center gap-2">
                 <PopcornIcon className="w-5 h-5" />
-                Step 2: Pick Your Seats
+                Pick your seats
               </h3>
-              <p className="text-sm text-muted-foreground mb-4 sm:mb-6">
-                Watching: <span className="font-semibold text-foreground">{selectedMovie?.title}</span>
-                <span className="ml-2 text-xs text-accent">(select multiple seats!)</span>
+              <p className="text-sm text-muted-foreground mb-4 sm:mb-6 font-handwritten text-base">
+                watching <span className="font-semibold text-foreground">{selectedMovie?.title}</span>
+                <span className="ml-2 text-xs text-accent">(you can grab a few!)</span>
               </p>
               <SeatPicker selectedSeats={selectedSeats} onSelect={setSelectedSeats} bookedSeats={bookedSeats} />
               {selectedSeats.length > 0 && (
@@ -287,7 +298,7 @@ export default function Tickets() {
                   <Button variant="outline" onClick={() => setStep("movie")}>Back</Button>
                   <Button variant="warm" onClick={handleBook} className="flex-1 sm:flex-none">
                     <TicketIcon className="w-4 h-4 mr-1" />
-                    Book {selectedSeats.length} Seat{selectedSeats.length > 1 ? "s" : ""} ✨
+                    Book {selectedSeats.length} seat{selectedSeats.length > 1 ? "s" : ""}
                   </Button>
                 </motion.div>
               )}
@@ -304,8 +315,8 @@ export default function Tickets() {
               <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}>
                 <ClapperboardIcon className="w-12 sm:w-16 h-12 sm:h-16 mx-auto" />
               </motion.div>
-              <p className="font-display text-lg sm:text-xl font-semibold text-foreground mt-4">Creating your magical ticket...</p>
-              <p className="text-sm text-muted-foreground mt-2">Our AI is crafting something special ✨</p>
+              <p className="font-display text-xl italic font-semibold text-foreground mt-4">stitching your ticket together…</p>
+              <p className="font-handwritten text-base text-muted-foreground mt-2">a little something special, just for you</p>
             </motion.div>
           )}
 
@@ -322,9 +333,9 @@ export default function Tickets() {
                 isNew
                 onShareWithFriend={() => openShareDialog(newTicket.id, newTicket.movieTitle)}
               />
-              <div className="flex justify-center mt-4">
+              <div className="flex justify-center mt-6">
                 <Button variant="outline" onClick={resetBooking} className="rounded-full">
-                  Book Another Ticket
+                  Book another ticket
                 </Button>
               </div>
             </motion.div>
@@ -341,9 +352,9 @@ export default function Tickets() {
         {/* Shared tickets received */}
         {!isLoading && sharedTickets.length > 0 && step !== "done" && (
           <>
-            <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+            <h2 className="font-display text-2xl sm:text-3xl italic font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
               <Gift className="w-5 sm:w-6 h-5 sm:h-6 text-primary" />
-              Tickets From Friends
+              little gifts from friends
             </h2>
             <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-10">
               {sharedTickets.map((ticket, i) => (
@@ -363,9 +374,9 @@ export default function Tickets() {
         {/* All Tickets Collection */}
         {!isLoading && ticketDisplayData.length > 0 && step !== "done" && (
           <>
-            <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
+            <h2 className="font-display text-2xl sm:text-3xl italic font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
               <TicketIcon className="w-5 sm:w-6 h-5 sm:h-6 text-accent" />
-              Your Ticket Collection
+              your ticket scrapbook
             </h2>
             <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               {ticketDisplayData
@@ -391,8 +402,8 @@ export default function Tickets() {
         {!isLoading && ticketDisplayData.length === 0 && step === "movie" && (
           <EmptyState
             icon={TicketIcon}
-            title="No tickets yet..."
-            description="Pick a movie above to get your first ticket! 🎬"
+            title="no stubs in the scrapbook yet"
+            description="pick a movie above to start your little collection"
           />
         )}
       </div>
