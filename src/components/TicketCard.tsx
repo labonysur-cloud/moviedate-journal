@@ -52,6 +52,7 @@ function tilt(id: string) {
 export default function TicketCard({ ticket, isNew = false, onShareWithFriend, compact = false, showActions = true }: TicketCardProps) {
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [creatingRoom, setCreatingRoom] = useState(false);
   const [currentEmbedUrl, setCurrentEmbedUrl] = useState<string | null>(ticket.embedUrl ?? null);
   const navigate = useNavigate();
