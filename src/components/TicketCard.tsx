@@ -126,6 +126,43 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
     setDownloading(false);
   };
 
+  const handleDownloadPdf = async () => {
+    if (!ticketRef.current) return;
+    setDownloadingPdf(true);
+    try {
+      const canvas = await html2canvas(ticketRef.current, {
+        backgroundColor: "#faf3e7",
+        scale: 3,
+        useCORS: true,
+        logging: false,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      // A6-ish keepsake portrait (105 x 148 mm), fit ticket with margin
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a6" });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 6;
+      const maxW = pageW - margin * 2;
+      const maxH = pageH - margin * 2;
+      const ratio = Math.min(maxW / imgW, maxH / imgH);
+      const w = imgW * ratio;
+      const h = imgH * ratio;
+      const x = (pageW - w) / 2;
+      const y = (pageH - h) / 2;
+      // soft cream background
+      pdf.setFillColor(250, 243, 231);
+      pdf.rect(0, 0, pageW, pageH, "F");
+      pdf.addImage(imgData, "PNG", x, y, w, h, undefined, "FAST");
+      pdf.save(`cozy-cinema-${ticket.movieTitle.replace(/\s+/g, "-").toLowerCase()}-ticket.pdf`);
+    } catch (e) {
+      console.error("PDF download failed:", e);
+      toast({ title: "Couldn't save PDF", description: "Please try again.", variant: "destructive" });
+    }
+    setDownloadingPdf(false);
+  };
+
   return (
     <div className={cn("relative", compact && "scale-95 origin-top-left")}>
       {/* Capturable ticket area */}
