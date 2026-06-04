@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Link2, Copy, Check, UserPlus, Heart, Mail, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export default function Friends() {
   const [friendCode, setFriendCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [autofilledFromUrl, setAutofilledFromUrl] = useState(false);
 
   const pendingRequests = requests.filter(
     (r) => r.status === "pending" && r.to_user === user?.id
@@ -46,11 +47,12 @@ export default function Friends() {
     setAdding(false);
   };
 
-  // Auto-add from URL params
-  const urlCode = new URLSearchParams(window.location.search).get("code");
-  if (urlCode && !friendCode && !loading) {
+  useEffect(() => {
+    const urlCode = new URLSearchParams(window.location.search).get("code");
+    if (!urlCode || autofilledFromUrl || loading) return;
     setFriendCode(urlCode);
-  }
+    setAutofilledFromUrl(true);
+  }, [autofilledFromUrl, loading]);
 
   if (loading) {
     return (
@@ -60,7 +62,7 @@ export default function Friends() {
             <Users className="w-7 sm:w-8 h-7 sm:h-8 text-primary" />
             Friends
           </h1>
-          <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Your movie night crew 💕</p>
+          <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Your movie night crew</p>
           <FriendsSkeleton />
         </div>
       </div>
@@ -74,16 +76,17 @@ export default function Friends() {
           <Users className="w-7 sm:w-8 h-7 sm:h-8 text-primary" />
           Friends
         </h1>
-        <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Your movie night crew 💕</p>
+        <p className="text-muted-foreground mb-8 sm:mb-10 text-sm sm:text-base">Your movie night crew</p>
 
         {/* Share Link Section */}
-        <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border mb-4 sm:mb-6">
+        <div className="relative overflow-hidden rounded-[26px] border-2 border-border bg-card p-4 sm:p-6 mb-4 sm:mb-6 bg-gingham shadow-[0_16px_36px_-28px_hsl(var(--primary)/0.5)]">
+          <div className="pointer-events-none absolute right-4 top-3 h-8 w-20 rotate-[5deg] rounded-sm bg-secondary/85 shadow-sm" />
           <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <Link2 className="w-5 h-5 text-accent" />
             Invite Friends
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Generate a link and share it with your friends to connect!
+            Copy one pretty invite link and share it when you want a new movie buddy.
           </p>
           <Button variant="warm" size="sm" onClick={handleGenerateLink} className="w-full sm:w-auto">
             {copied ? (
@@ -97,26 +100,28 @@ export default function Friends() {
             )}
           </Button>
           {myLink && (
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-xs text-muted-foreground mt-2 font-handwritten text-base">
               Your code: <code className="bg-muted px-2 py-0.5 rounded font-mono">{myLink.code}</code>
             </p>
           )}
         </div>
 
         {/* Add by Code */}
-        <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border mb-4 sm:mb-6">
+        <div className="relative overflow-hidden rounded-[26px] border-2 border-border bg-card p-4 sm:p-6 mb-4 sm:mb-6 shadow-[0_16px_36px_-28px_hsl(var(--accent)/0.45)]">
+          <div className="pointer-events-none absolute left-5 top-3 h-8 w-16 -rotate-[6deg] rounded-sm bg-secondary/80 shadow-sm" />
           <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-accent" />
             Add by Code or Link
           </h3>
-          <div className="flex gap-2">
+          <p className="mb-4 text-sm text-muted-foreground">Paste a code or full invite link and we will tuck them right into your friends list.</p>
+          <div className="flex gap-2 flex-col sm:flex-row">
             <Input
               placeholder="Paste friend code or link..."
               value={friendCode}
               onChange={(e) => setFriendCode(e.target.value)}
-              className="flex-1"
+              className="flex-1 rounded-2xl border-border/80 bg-background/80"
             />
-            <Button variant="ticket" size="sm" onClick={handleAddFriend} disabled={adding || !friendCode.trim()}>
+            <Button variant="ticket" size="sm" className="sm:min-w-[110px]" onClick={handleAddFriend} disabled={adding || !friendCode.trim()}>
               {adding ? "Adding..." : "Add"}
             </Button>
           </div>
@@ -129,7 +134,7 @@ export default function Friends() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-card rounded-2xl p-4 sm:p-6 border border-accent/30 mb-4 sm:mb-6"
+              className="rounded-[26px] border-2 border-accent/35 bg-card p-4 sm:p-6 mb-4 sm:mb-6 shadow-[0_16px_36px_-28px_hsl(var(--accent)/0.45)]"
             >
               <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Mail className="w-5 h-5 text-accent" />
@@ -137,7 +142,7 @@ export default function Friends() {
               </h3>
               <div className="space-y-3">
                 {pendingRequests.map((req) => (
-                  <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50 gap-2">
+                  <div key={req.id} className="flex items-center justify-between p-3 rounded-[20px] bg-secondary/55 gap-2 border border-border/60">
                     <div className="flex items-center gap-3 min-w-0">
                       <Avatar className="w-8 h-8 shrink-0">
                         {req.from_profile?.avatar_url && (
@@ -167,7 +172,7 @@ export default function Friends() {
         </AnimatePresence>
 
         {/* Friends List */}
-        <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border">
+        <div className="relative overflow-hidden rounded-[26px] border-2 border-border bg-card p-4 sm:p-6 bg-polka">
           <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-primary" />
             My Friends ({friends.length})
@@ -184,7 +189,7 @@ export default function Friends() {
                   key={friend.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-[20px] border border-border/60 bg-background/75 hover:bg-secondary/50 transition-colors"
                 >
                   <Avatar className="w-10 h-10 shrink-0">
                     {friend.avatar_url && (
@@ -196,7 +201,7 @@ export default function Friends() {
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-foreground text-sm truncate">{friend.display_name}</p>
-                    <p className="text-xs text-muted-foreground">Movie buddy 🍿</p>
+                    <p className="text-xs text-muted-foreground font-handwritten text-base">movie buddy</p>
                   </div>
                   <Button
                     variant="ghost"
