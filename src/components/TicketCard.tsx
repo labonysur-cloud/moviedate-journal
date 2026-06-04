@@ -357,6 +357,10 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
             <Download className="w-3 h-3 mr-1" />
             {downloading ? "Saving..." : "Save as PNG"}
           </Button>
+          <Button variant="warm" size="sm" className="text-xs rounded-full" onClick={handleDownloadPdf} disabled={downloadingPdf}>
+            {downloadingPdf ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Download className="w-3 h-3 mr-1" />}
+            {downloadingPdf ? "Stitching..." : "Save as PDF"}
+          </Button>
           <Button variant="outline" size="sm" className="text-xs rounded-full" onClick={handleWebShare}>
             <Share2 className="w-3 h-3 mr-1" /> Share
           </Button>
