@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import SourceStatus from "@/components/SourceStatus";
 
 export interface TicketDisplayData {
