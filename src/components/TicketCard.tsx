@@ -51,6 +51,9 @@ function tilt(id: string) {
 
 function escapeHtml(s: string | undefined | null) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
+
 
 export default function TicketCard({ ticket, isNew = false, onShareWithFriend, compact = false, showActions = true }: TicketCardProps) {
   const ticketRef = useRef<HTMLDivElement>(null);
