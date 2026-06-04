@@ -80,7 +80,7 @@ export default function Profile() {
     if (!user) return;
     setSaving(true);
     try {
-      const nextProfile = await saveProfile(user, { display_name });
+      const nextProfile = await saveProfile(user, { display_name: displayName });
       setDisplayName(nextProfile.display_name);
       setAvatarUrl(nextProfile.avatar_url);
       toast.success("Your profile card is updated");
