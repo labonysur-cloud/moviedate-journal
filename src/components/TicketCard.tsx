@@ -49,6 +49,12 @@ function tilt(id: string) {
   return deg;
 }
 
+function escapeHtml(s: string | undefined | null) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
+
+
 export default function TicketCard({ ticket, isNew = false, onShareWithFriend, compact = false, showActions = true }: TicketCardProps) {
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -126,42 +132,160 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
     setDownloading(false);
   };
 
-  const handleDownloadPdf = async () => {
-    if (!ticketRef.current) return;
-    setDownloadingPdf(true);
+  const fetchPosterDataUrl = async (url: string): Promise<string | null> => {
+    const tryFetch = async (u: string) => {
+      const res = await fetch(u, { mode: "cors" });
+      if (!res.ok) throw new Error(String(res.status));
+      const blob = await res.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result as string);
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+    };
     try {
-      const canvas = await html2canvas(ticketRef.current, {
-        backgroundColor: "#faf3e7",
+      return await tryFetch(url);
+    } catch {
+      try {
+        // CORS-friendly image proxy fallback
+        const proxied = `https://images.weserv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//, ""))}`;
+        return await tryFetch(proxied);
+      } catch {
+        return null;
+      }
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    setDownloadingPdf(true);
+    let host: HTMLDivElement | null = null;
+    try {
+      // 1. Pre-fetch poster so it embeds into the PDF
+      const posterData = ticket.poster ? await fetchPosterDataUrl(ticket.poster) : null;
+
+      // 2. Build an off-screen, print-worthy keepsake (A5 portrait @ 96dpi ≈ 559 x 794 px)
+      host = document.createElement("div");
+      host.style.cssText =
+        "position:fixed;left:-10000px;top:0;width:559px;height:794px;z-index:-1;pointer-events:none;";
+      host.innerHTML = `
+        <div style="
+          width:559px;height:794px;box-sizing:border-box;padding:28px;
+          background:
+            radial-gradient(circle at 12px 12px, rgba(212,165,116,0.18) 1.5px, transparent 2px) 0 0/22px 22px,
+            linear-gradient(135deg,#fbf3e4 0%,#f6e7cf 100%);
+          font-family:'Nunito', system-ui, sans-serif; color:#5a1d28; position:relative; overflow:hidden;
+        ">
+          <!-- washi tape corners -->
+          <div style="position:absolute;top:14px;left:30px;width:96px;height:18px;transform:rotate(-6deg);
+            background:repeating-linear-gradient(45deg,#d4a574 0 7px,#c0556d 7px 14px);opacity:.85;box-shadow:0 2px 6px rgba(0,0,0,.12)"></div>
+          <div style="position:absolute;bottom:18px;right:34px;width:78px;height:16px;transform:rotate(8deg);
+            background:repeating-linear-gradient(-45deg,#c0556d 0 6px,#fbf3e4 6px 12px);opacity:.85;box-shadow:0 2px 6px rgba(0,0,0,.12)"></div>
+
+          <!-- outer scallop frame -->
+          <div style="position:absolute;inset:18px;border:2px dashed #5a1d28;border-radius:18px;opacity:.45"></div>
+          <div style="position:absolute;inset:24px;border:1px solid #d4a574;border-radius:14px;opacity:.7"></div>
+
+          <!-- header -->
+          <div style="position:relative;text-align:center;margin-top:8px">
+            <div style="font-family:'Caveat',cursive;font-size:18px;color:#8b3a48;letter-spacing:.5px">a little keepsake from</div>
+            <div style="font-family:'Playfair Display',Georgia,serif;font-weight:900;font-size:30px;letter-spacing:.32em;color:#5a1d28;margin-top:2px">COZY CINEMA</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;color:#c89f4a">
+              <span style="height:1px;width:60px;background:#c89f4a"></span>
+              <span style="font-size:11px;letter-spacing:.4em">★ ★ ★</span>
+              <span style="height:1px;width:60px;background:#c89f4a"></span>
+            </div>
+          </div>
+
+          <!-- polaroid poster -->
+          <div style="display:flex;justify-content:center;margin-top:18px">
+            <div style="background:#fffaf0;padding:10px 10px 38px;box-shadow:0 12px 24px -10px rgba(90,29,40,.45);transform:rotate(-2.5deg);position:relative">
+              ${posterData
+                ? `<img src="${posterData}" alt="" style="width:200px;height:280px;object-fit:cover;display:block" crossorigin="anonymous"/>`
+                : `<div style="width:200px;height:280px;display:flex;align-items:center;justify-content:center;background:#f1e2c8;color:#8b3a48;font-family:'Caveat',cursive;font-size:22px">${(ticket.movieTitle || "movie").slice(0,28)}</div>`}
+              <div style="position:absolute;left:0;right:0;bottom:8px;text-align:center;font-family:'Caveat',cursive;font-size:18px;color:#5a1d28">${ticket.year || "now showing"}</div>
+              <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:54px;height:14px;background:rgba(212,165,116,.7)"></div>
+            </div>
+          </div>
+
+          <!-- title -->
+          <div style="text-align:center;margin-top:18px;padding:0 18px">
+            <h1 style="margin:0;font-family:'Playfair Display',Georgia,serif;font-weight:900;font-size:26px;line-height:1.1;letter-spacing:.04em;text-transform:uppercase;color:#5a1d28">${escapeHtml(ticket.movieTitle)}</h1>
+            ${ticket.tagline ? `<p style="margin:6px 0 0;font-family:'Caveat',cursive;font-size:19px;color:#8b3a48">"${escapeHtml(ticket.tagline)}"</p>` : ""}
+            <div style="margin-top:8px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;font-size:11px">
+              <span style="padding:3px 10px;border-radius:999px;background:#5a1d28;color:#fbf3e4;letter-spacing:.18em;text-transform:uppercase;font-weight:700">${escapeHtml(ticket.genre || "feature")}</span>
+              ${ticket.rating ? `<span style="padding:3px 10px;border-radius:999px;background:#c89f4a;color:#5a1d28;font-weight:800">★ ${escapeHtml(ticket.rating)}</span>` : ""}
+            </div>
+          </div>
+
+          <!-- perforated divider -->
+          <div style="position:relative;margin:18px 8px 14px;height:14px">
+            <div style="position:absolute;left:-22px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:#fbf3e4;border:1px dashed #5a1d28"></div>
+            <div style="position:absolute;right:-22px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;background:#fbf3e4;border:1px dashed #5a1d28"></div>
+            <div style="position:absolute;left:14px;right:14px;top:50%;border-top:2px dashed #5a1d28;opacity:.5"></div>
+          </div>
+
+          <!-- stub details -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 18px;text-align:center">
+            ${[
+              { l: "Date", v: ticket.date },
+              { l: "Time", v: ticket.time },
+              { l: "Screen", v: String(screen) },
+              { l: "Seat", v: ticket.seat },
+            ].map(c => `
+              <div>
+                <div style="font-size:9px;letter-spacing:.22em;font-weight:800;color:#8b3a48;text-transform:uppercase">${c.l}</div>
+                <div style="font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:16px;color:#5a1d28;margin-top:2px">${escapeHtml(c.v)}</div>
+              </div>`).join("")}
+          </div>
+
+          ${ticket.mood || ticket.suggestedSnack ? `
+          <div style="text-align:center;margin-top:14px;font-family:'Caveat',cursive;font-size:17px;color:#8b3a48">
+            ${ticket.mood ? `mood — ${escapeHtml(ticket.mood)}` : ""}
+            ${ticket.suggestedSnack ? ` · pair with ${escapeHtml(ticket.suggestedSnack.replace(/[\p{Emoji}\u200d]/gu,"").trim())}` : ""}
+          </div>` : ""}
+
+          ${ticket.funFact ? `
+          <div style="margin:12px 22px 0;padding:10px 14px;border:1px dashed #c89f4a;border-radius:10px;background:rgba(255,250,240,.6);text-align:center;font-family:'Caveat',cursive;font-size:16px;color:#5a1d28;line-height:1.25">
+            ${escapeHtml(ticket.funFact)}
+          </div>` : ""}
+
+          <!-- footer -->
+          <div style="position:absolute;left:0;right:0;bottom:30px;text-align:center">
+            <div style="font-family:'Caveat',cursive;font-size:18px;color:#8b3a48">a little ticket to a cozy night in</div>
+            <div style="margin-top:4px;font-size:9px;letter-spacing:.4em;color:#5a1d28;opacity:.55">COZY CINEMA · KEEPSAKE EDITION</div>
+          </div>
+        </div>`;
+      document.body.appendChild(host);
+
+      // give fonts/images a moment to settle
+      await new Promise(r => setTimeout(r, 120));
+      if ((document as any).fonts?.ready) await (document as any).fonts.ready;
+
+      const canvas = await html2canvas(host.firstElementChild as HTMLElement, {
+        backgroundColor: "#fbf3e4",
         scale: 3,
         useCORS: true,
         logging: false,
       });
       const imgData = canvas.toDataURL("image/png");
-      const imgW = canvas.width;
-      const imgH = canvas.height;
-      // A6-ish keepsake portrait (105 x 148 mm), fit ticket with margin
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a6" });
+      // A5 portrait keepsake
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5", compress: true });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 6;
-      const maxW = pageW - margin * 2;
-      const maxH = pageH - margin * 2;
-      const ratio = Math.min(maxW / imgW, maxH / imgH);
-      const w = imgW * ratio;
-      const h = imgH * ratio;
-      const x = (pageW - w) / 2;
-      const y = (pageH - h) / 2;
-      // soft cream background
-      pdf.setFillColor(250, 243, 231);
+      pdf.setFillColor(251, 243, 228);
       pdf.rect(0, 0, pageW, pageH, "F");
-      pdf.addImage(imgData, "PNG", x, y, w, h, undefined, "FAST");
+      pdf.addImage(imgData, "PNG", 0, 0, pageW, pageH, undefined, "FAST");
       pdf.save(`cozy-cinema-${ticket.movieTitle.replace(/\s+/g, "-").toLowerCase()}-ticket.pdf`);
     } catch (e) {
       console.error("PDF download failed:", e);
       toast({ title: "Couldn't save PDF", description: "Please try again.", variant: "destructive" });
+    } finally {
+      if (host && host.parentNode) host.parentNode.removeChild(host);
+      setDownloadingPdf(false);
     }
-    setDownloadingPdf(false);
   };
+
 
   return (
     <div className={cn("relative", compact && "scale-95 origin-top-left")}>
