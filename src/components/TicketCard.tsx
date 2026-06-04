@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import SourceStatus from "@/components/SourceStatus";
 
 export interface TicketDisplayData {
@@ -51,6 +52,7 @@ function tilt(id: string) {
 export default function TicketCard({ ticket, isNew = false, onShareWithFriend, compact = false, showActions = true }: TicketCardProps) {
   const ticketRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [creatingRoom, setCreatingRoom] = useState(false);
   const [currentEmbedUrl, setCurrentEmbedUrl] = useState<string | null>(ticket.embedUrl ?? null);
   const navigate = useNavigate();
@@ -122,6 +124,43 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
       console.error("Download failed:", e);
     }
     setDownloading(false);
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!ticketRef.current) return;
+    setDownloadingPdf(true);
+    try {
+      const canvas = await html2canvas(ticketRef.current, {
+        backgroundColor: "#faf3e7",
+        scale: 3,
+        useCORS: true,
+        logging: false,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      // A6-ish keepsake portrait (105 x 148 mm), fit ticket with margin
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a6" });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 6;
+      const maxW = pageW - margin * 2;
+      const maxH = pageH - margin * 2;
+      const ratio = Math.min(maxW / imgW, maxH / imgH);
+      const w = imgW * ratio;
+      const h = imgH * ratio;
+      const x = (pageW - w) / 2;
+      const y = (pageH - h) / 2;
+      // soft cream background
+      pdf.setFillColor(250, 243, 231);
+      pdf.rect(0, 0, pageW, pageH, "F");
+      pdf.addImage(imgData, "PNG", x, y, w, h, undefined, "FAST");
+      pdf.save(`cozy-cinema-${ticket.movieTitle.replace(/\s+/g, "-").toLowerCase()}-ticket.pdf`);
+    } catch (e) {
+      console.error("PDF download failed:", e);
+      toast({ title: "Couldn't save PDF", description: "Please try again.", variant: "destructive" });
+    }
+    setDownloadingPdf(false);
   };
 
   return (
@@ -318,6 +357,10 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
             <Download className="w-3 h-3 mr-1" />
             {downloading ? "Saving..." : "Save as PNG"}
           </Button>
+          <Button variant="warm" size="sm" className="text-xs rounded-full" onClick={handleDownloadPdf} disabled={downloadingPdf}>
+            {downloadingPdf ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Download className="w-3 h-3 mr-1" />}
+            {downloadingPdf ? "Stitching..." : "Save as PDF"}
+          </Button>
           <Button variant="outline" size="sm" className="text-xs rounded-full" onClick={handleWebShare}>
             <Share2 className="w-3 h-3 mr-1" /> Share
           </Button>
@@ -355,6 +398,9 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
           )}
           <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleDownload} disabled={downloading}>
             <Download className="w-3 h-3 mr-0.5" /> PNG
+          </Button>
+          <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleDownloadPdf} disabled={downloadingPdf}>
+            {downloadingPdf ? <Loader2 className="w-3 h-3 mr-0.5 animate-spin" /> : <Download className="w-3 h-3 mr-0.5" />} PDF
           </Button>
           <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2" onClick={handleWebShare}>
             <Share2 className="w-3 h-3 mr-0.5" /> Share
