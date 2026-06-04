@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { getOrCreateProfile } from "@/lib/profile";
 
 export interface FriendRequest {
   id: string;
@@ -30,6 +31,8 @@ export function useFriends() {
 
   const fetchFriends = async () => {
     if (!user) return;
+
+    await getOrCreateProfile(user);
 
     // Fetch friend requests
     const { data: reqData } = await supabase
@@ -68,8 +71,12 @@ export function useFriends() {
             display_name: profile?.display_name || "Friend",
             avatar_url: profile?.avatar_url || null,
           };
-        });
+        })
+        .filter((friend, index, array) => array.findIndex((entry) => entry.user_id === friend.user_id) === index);
       setFriends(acceptedFriends);
+    } else {
+      setRequests([]);
+      setFriends([]);
     }
 
     // Fetch my share link
@@ -150,7 +157,7 @@ export function useFriends() {
       return false;
     }
 
-    toast({ title: "🎉 Friend added!", description: "You're now connected!" });
+    toast({ title: "Friend added", description: "Your movie circle just got a little sweeter." });
     await fetchFriends();
     return true;
   };
@@ -165,7 +172,7 @@ export function useFriends() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "🎉 Friend accepted!" });
+    toast({ title: "Friend request accepted", description: "You are ready for your next movie night." });
     await fetchFriends();
   };
 
