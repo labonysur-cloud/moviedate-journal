@@ -20,6 +20,7 @@ import WatchRoom from "./pages/WatchRoom";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ function AnimatedRoutes() {
                   <Route path="/friends" element={<PageTransition><Friends /></PageTransition>} />
                   <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
                   <Route path="/watch-together" element={<PageTransition><WatchRoom /></PageTransition>} />
+                  <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
                   <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
                 </Routes>
               </AnimatePresence>

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Film, Ticket, BookHeart, Home, Users, UserCircle, Moon, Sun, Menu, X, Heart } from "lucide-react";
+import { Film, Ticket, BookHeart, Home, Users, UserCircle, Moon, Sun, Menu, X, Heart, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useSharedTicketCount } from "@/hooks/useSharedTicketCount";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const links = [
   { to: "/", label: "Home", icon: Home },
@@ -22,6 +23,8 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const sharedTicketCount = useSharedTicketCount();
+  const { isAdmin } = useIsAdmin();
+  const navLinks = isAdmin ? [...links, { to: "/admin", label: "Admin", icon: ShieldCheck }] : links;
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-background/95 border-b-2 border-primary/20 shadow-sm">
@@ -36,7 +39,7 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-0.5">
-          {links.map(({ to, label, icon: Icon }) => (
+          {navLinks.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
@@ -108,7 +111,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t-2 border-primary/10 bg-background/95 backdrop-blur-md px-4 pb-4 pt-2 space-y-1 bg-polka">
-          {links.map(({ to, label, icon: Icon }) => (
+          {navLinks.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
