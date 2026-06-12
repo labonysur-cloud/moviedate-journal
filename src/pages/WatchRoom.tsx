@@ -57,14 +57,16 @@ export default function WatchRoom() {
   useEffect(() => {
     if (!inviteCode || !user) return;
     (async () => {
-      const { data: foundRoom } = await supabase
-        .from("watch_rooms")
-        .select("*")
-        .eq("invite_code", inviteCode)
-        .eq("is_active", true)
-        .single();
-      if (foundRoom) {
-        navigate(`/watch-together?room=${foundRoom.id}`, { replace: true });
+      // Secure invite code lookup — only returns a match if the code is valid
+      const { data: foundRoomId } = await supabase
+        .rpc("lookup_room_by_invite_code", { _code: inviteCode });
+      if (foundRoomId) {
+        // Join immediately so RLS lets us read the room
+        await supabase.from("room_members").upsert(
+          { room_id: foundRoomId, user_id: user.id },
+          { onConflict: "room_id,user_id" }
+        );
+        navigate(`/watch-together?room=${foundRoomId}`, { replace: true });
       } else {
         toast.error("Room not found or expired");
         navigate("/movies");

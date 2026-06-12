@@ -348,6 +348,8 @@ export type Database = {
     }
     Functions: {
       get_booked_seats: { Args: { p_movie_id: string }; Returns: string[] }
+      lookup_friend_by_code: { Args: { _code: string }; Returns: string }
+      lookup_room_by_invite_code: { Args: { _code: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
