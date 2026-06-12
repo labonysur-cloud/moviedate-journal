@@ -118,19 +118,15 @@ export function useFriends() {
   const addFriendByCode = async (code: string) => {
     if (!user) return false;
 
-    // Look up the friend link
-    const { data: links } = await supabase
-      .from("friend_links")
-      .select("*")
-      .eq("code", code.trim())
-      .limit(1);
+    // Securely look up the friend link by code (does not expose other codes)
+    const { data: friendUserId, error: lookupError } = await supabase
+      .rpc("lookup_friend_by_code", { _code: code.trim() });
 
-    if (!links || links.length === 0) {
+    if (lookupError || !friendUserId) {
       toast({ title: "Invalid code", description: "No friend found with that code", variant: "destructive" });
       return false;
     }
 
-    const friendUserId = links[0].user_id;
     if (friendUserId === user.id) {
       toast({ title: "That's you!", description: "You can't add yourself as a friend", variant: "destructive" });
       return false;

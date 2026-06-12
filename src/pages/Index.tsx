@@ -56,6 +56,7 @@ export default function Index() {
 
   useEffect(() => {
     const fetchRooms = async () => {
+      // Only rooms the current user hosts or is a member of are visible (RLS-enforced).
       const { data } = await supabase
         .from("watch_rooms")
         .select("*")
