@@ -22,8 +22,10 @@ import { ClapperboardIcon } from "@/components/icons/CinemaIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { CardGridSkeleton } from "@/components/PageSkeleton";
 import EmptyState from "@/components/EmptyState";
+
 
 function getMoviePoster(movie: Movie): string {
   return movie.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop";
@@ -51,6 +53,8 @@ export default function Movies() {
   const { movies, loading, addMovie, deleteMovie } = useMovies();
   const { hasTicketForMovie } = useTickets();
   const { user } = useAuth();
+  const { isAdmin } = useIsAdmin();
+
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" });
   const [autofilling, setAutofilling] = useState(false);
@@ -430,7 +434,7 @@ export default function Movies() {
                         </div>
                       )}
 
-                      {user?.id === movie.added_by && (
+                      {(user?.id === movie.added_by || isAdmin) && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <button
