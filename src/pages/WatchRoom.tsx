@@ -57,15 +57,10 @@ export default function WatchRoom() {
   useEffect(() => {
     if (!inviteCode || !user) return;
     (async () => {
-      // Secure invite code lookup — only returns a match if the code is valid
-      const { data: foundRoomId } = await supabase
-        .rpc("lookup_room_by_invite_code", { _code: inviteCode });
-      if (foundRoomId) {
-        // Join immediately so RLS lets us read the room
-        await supabase.from("room_members").upsert(
-          { room_id: foundRoomId, user_id: user.id },
-          { onConflict: "room_id,user_id" }
-        );
+      // Secure invite code lookup & join — server validates code and inserts membership
+      const { data: foundRoomId, error } = await supabase
+        .rpc("join_room_with_code", { _code: inviteCode });
+      if (!error && foundRoomId) {
         navigate(`/watch-together?room=${foundRoomId}`, { replace: true });
       } else {
         toast.error("Room not found or expired");
@@ -80,14 +75,17 @@ export default function WatchRoom() {
     (async () => {
       const { data: r } = await supabase
         .from("watch_rooms")
-        .select("*")
+        .select("id, movie_id, movie_title, embed_url, host_id, is_active, created_at")
         .eq("id", roomId)
         .single();
       if (!r) { toast.error("Room not found"); navigate("/movies"); return; }
       setRoom(r);
 
-      // Join room
-      await supabase.from("room_members").upsert({ room_id: roomId, user_id: user.id }, { onConflict: "room_id,user_id" });
+      // Ensure host membership row exists (non-hosts joined via RPC already)
+      if (r.host_id === user.id) {
+        await supabase.from("room_members").upsert({ room_id: roomId, user_id: user.id }, { onConflict: "room_id,user_id" });
+      }
+
 
       // Load members
       const { data: mems } = await supabase.from("room_members").select("user_id").eq("room_id", roomId);
