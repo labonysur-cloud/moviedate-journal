@@ -282,7 +282,7 @@ export default function Index() {
                   transition={{ delay: i * 0.1 }}
                 >
                   <Link
-                    to={`/watch-together?invite=${room.invite_code}`}
+                    to={`/watch-together?room=${room.id}`}
                     className="block group cute-card bg-card rounded-2xl p-4 sm:p-5 border-2 border-primary/10 hover:border-primary/30"
                   >
                     <div className="flex items-start justify-between mb-3">
