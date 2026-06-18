@@ -372,6 +372,7 @@ export type Database = {
     }
     Functions: {
       get_booked_seats: { Args: { p_movie_id: string }; Returns: string[] }
+      get_room_invite_code: { Args: { _room_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -380,6 +381,7 @@ export type Database = {
         Returns: boolean
       }
       is_blocked: { Args: { _user_id: string }; Returns: boolean }
+      join_room_with_code: { Args: { _code: string }; Returns: string }
       lookup_friend_by_code: { Args: { _code: string }; Returns: string }
       lookup_room_by_invite_code: { Args: { _code: string }; Returns: string }
     }
