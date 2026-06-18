@@ -179,14 +179,23 @@ export default function WatchRoom() {
     sendMessage(`[gif]${url}[/gif]`);
   };
 
-  const copyInvite = () => {
-    if (!room) return;
-    const url = `${window.location.origin}/watch-together?invite=${room.invite_code}`;
+  const copyInvite = async () => {
+    if (!room || room.host_id !== user?.id) {
+      toast.error("Only the host can share the invite link");
+      return;
+    }
+    const { data: code, error } = await supabase.rpc("get_room_invite_code", { _room_id: room.id });
+    if (error || !code) {
+      toast.error("Couldn't fetch invite code");
+      return;
+    }
+    const url = `${window.location.origin}/watch-together?invite=${code}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     toast.success("Invite link copied!");
     setTimeout(() => setCopied(false), 2000);
   };
+
 
   if (loading || !room) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading room...</div>;
