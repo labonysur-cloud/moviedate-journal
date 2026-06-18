@@ -520,7 +520,7 @@ export default function Movies() {
                                       embed_url: movie.embed_url,
                                       host_id: user.id,
                                     })
-                                    .select()
+                                    .select("id")
                                     .single();
                                   if (data) navigate(`/watch-together?room=${data.id}`);
                                 }}
