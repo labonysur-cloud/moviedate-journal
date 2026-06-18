@@ -89,7 +89,7 @@ export default function TicketCard({ ticket, isNew = false, onShareWithFriend, c
           movie_title: ticket.movieTitle,
           embed_url: ticket.embedUrl,
         })
-        .select()
+        .select("id")
         .single();
       if (error) throw error;
       toast({ title: "Room created", description: "Share the invite link with friends" });
