@@ -59,10 +59,11 @@ export default function Index() {
       // Only rooms the current user hosts or is a member of are visible (RLS-enforced).
       const { data } = await supabase
         .from("watch_rooms")
-        .select("*")
+        .select("id, movie_id, movie_title, host_id, is_active, created_at")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(6);
+
       if (data && data.length > 0) {
         const roomIds = data.map((r) => r.id);
         const { data: members } = await supabase
