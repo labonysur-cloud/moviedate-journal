@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users, Sparkles, Wand2, Loader2, Trash2 } from "lucide-react";
+import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users, Sparkles, Wand2, Loader2, Trash2, Pencil } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,7 +51,7 @@ interface Recommendation {
 }
 
 export default function Movies() {
-  const { movies, loading, addMovie, deleteMovie } = useMovies();
+  const { movies, loading, addMovie, deleteMovie, updateMovie } = useMovies();
   const { hasTicketForMovie } = useTickets();
   const { user } = useAuth();
   const { isAdmin } = useIsAdmin();
@@ -63,6 +64,40 @@ export default function Movies() {
   const [recs, setRecs] = useState<Recommendation[]>([]);
   const [recsLoading, setRecsLoading] = useState(false);
   const [addingRec, setAddingRec] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Movie | null>(null);
+  const [editForm, setEditForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", embedUrl: "", rating: "", totalSeasons: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEdit = (m: Movie) => {
+    setEditing(m);
+    setEditForm({
+      title: m.title || "",
+      genre: m.genre || "",
+      year: m.year || "",
+      description: m.description || "",
+      poster: m.poster || "",
+      embedUrl: m.embed_url || "",
+      rating: m.rating || "",
+      totalSeasons: m.total_seasons ? String(m.total_seasons) : "",
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editing) return;
+    setSavingEdit(true);
+    const ok = await updateMovie(editing.id, {
+      title: editForm.title,
+      genre: editForm.genre || "Movie",
+      year: editForm.year,
+      description: editForm.description || null,
+      poster: editForm.poster || null,
+      embed_url: editForm.embedUrl || null,
+      rating: editForm.rating || null,
+      total_seasons: editForm.totalSeasons ? parseInt(editForm.totalSeasons) : null,
+    });
+    setSavingEdit(false);
+    if (ok) setEditing(null);
+  };
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -435,33 +470,42 @@ export default function Movies() {
                       )}
 
                       {(user?.id === movie.added_by || isAdmin) && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button
-                              aria-label="Delete movie"
-                              className="absolute top-3 left-3 p-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-all"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete "{movie.title}"?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will remove the movie from the shared collection. This action can't be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                onClick={() => deleteMovie(movie.id)}
+                        <div className="absolute top-3 left-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            aria-label="Edit movie"
+                            onClick={() => openEdit(movie)}
+                            className="p-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border hover:bg-primary hover:text-primary-foreground transition-all"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                aria-label="Delete movie"
+                                className="p-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border hover:bg-destructive hover:text-destructive-foreground transition-all"
                               >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete "{movie.title}"?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will remove the movie from the shared collection. This action can't be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => deleteMovie(movie.id)}
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       )}
 
                       <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
@@ -550,6 +594,70 @@ export default function Movies() {
           </div>
         )}
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Pencil className="w-4 h-4 text-primary" /> Edit movie details
+            </DialogTitle>
+            <DialogDescription>
+              Touch up the title, poster, link or any detail — changes are saved to the shared shelf. ♡
+            </DialogDescription>
+          </DialogHeader>
+
+          {editForm.poster && (
+            <div className="flex justify-center">
+              <img
+                src={editForm.poster}
+                alt={editForm.title}
+                className="h-32 rounded-xl object-cover border-2 border-primary/10 shadow-md"
+              />
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <Input
+              placeholder="Movie or show title *"
+              value={editForm.title}
+              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Genre" value={editForm.genre} onChange={(e) => setEditForm({ ...editForm, genre: e.target.value })} />
+              <Input placeholder="Year" value={editForm.year} onChange={(e) => setEditForm({ ...editForm, year: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Rating (e.g. 8.5)" value={editForm.rating} onChange={(e) => setEditForm({ ...editForm, rating: e.target.value })} />
+              <Input placeholder="Total seasons (optional)" value={editForm.totalSeasons} onChange={(e) => setEditForm({ ...editForm, totalSeasons: e.target.value })} />
+            </div>
+            <Input
+              placeholder="Poster image URL"
+              value={editForm.poster}
+              onChange={(e) => setEditForm({ ...editForm, poster: e.target.value })}
+            />
+            <Input
+              placeholder="Watch / Embed URL"
+              value={editForm.embedUrl}
+              onChange={(e) => setEditForm({ ...editForm, embedUrl: e.target.value })}
+            />
+            <Textarea
+              placeholder="Short description..."
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)} disabled={savingEdit}>
+              Cancel
+            </Button>
+            <Button variant="ticket" onClick={handleSaveEdit} disabled={savingEdit || !editForm.title}>
+              {savingEdit ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Film className="w-4 h-4 mr-1" />}
+              Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
