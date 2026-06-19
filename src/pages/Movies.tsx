@@ -594,6 +594,70 @@ export default function Movies() {
           </div>
         )}
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Pencil className="w-4 h-4 text-primary" /> Edit movie details
+            </DialogTitle>
+            <DialogDescription>
+              Touch up the title, poster, link or any detail — changes are saved to the shared shelf. ♡
+            </DialogDescription>
+          </DialogHeader>
+
+          {editForm.poster && (
+            <div className="flex justify-center">
+              <img
+                src={editForm.poster}
+                alt={editForm.title}
+                className="h-32 rounded-xl object-cover border-2 border-primary/10 shadow-md"
+              />
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <Input
+              placeholder="Movie or show title *"
+              value={editForm.title}
+              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Genre" value={editForm.genre} onChange={(e) => setEditForm({ ...editForm, genre: e.target.value })} />
+              <Input placeholder="Year" value={editForm.year} onChange={(e) => setEditForm({ ...editForm, year: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Rating (e.g. 8.5)" value={editForm.rating} onChange={(e) => setEditForm({ ...editForm, rating: e.target.value })} />
+              <Input placeholder="Total seasons (optional)" value={editForm.totalSeasons} onChange={(e) => setEditForm({ ...editForm, totalSeasons: e.target.value })} />
+            </div>
+            <Input
+              placeholder="Poster image URL"
+              value={editForm.poster}
+              onChange={(e) => setEditForm({ ...editForm, poster: e.target.value })}
+            />
+            <Input
+              placeholder="Watch / Embed URL"
+              value={editForm.embedUrl}
+              onChange={(e) => setEditForm({ ...editForm, embedUrl: e.target.value })}
+            />
+            <Textarea
+              placeholder="Short description..."
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)} disabled={savingEdit}>
+              Cancel
+            </Button>
+            <Button variant="ticket" onClick={handleSaveEdit} disabled={savingEdit || !editForm.title}>
+              {savingEdit ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Film className="w-4 h-4 mr-1" />}
+              Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
