@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users, Sparkles, Wand2, Loader2, Trash2 } from "lucide-react";
+import { Plus, Film, X, Star, ExternalLink, Play, Ticket, Users, Sparkles, Wand2, Loader2, Trash2, Pencil } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
