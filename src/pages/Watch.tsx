@@ -170,13 +170,14 @@ export default function Watch() {
           />
         ) : (
           <iframe
-            key={currentUrl}
+            key={`${currentUrl}-${shield ? "s" : "ns"}`}
             src={currentUrl}
             title={`${title} S${season}E${episode}`}
             className="w-full h-full border-0"
             allowFullScreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            referrerPolicy="strict-origin-when-cross-origin"
+            allow={PLAYER_ALLOW}
+            referrerPolicy="no-referrer"
+            {...(shield ? { sandbox: PLAYER_SANDBOX } : {})}
           />
         )}
       </div>
@@ -184,8 +185,15 @@ export default function Watch() {
 
       {/* Bottom bar */}
       <div className="px-4 py-2 bg-card/10 backdrop-blur-sm border-t border-border/20 text-center">
-        <p className="text-xs text-primary-foreground/50 italic font-handwritten text-base">
-          ✨ Enjoy the movie night together! Don't forget to write about it in your journal ✨
+        <p className="text-xs text-primary-foreground/50 italic font-handwritten text-base flex items-center justify-center gap-2">
+          {shield ? (
+            <>
+              <Shield className="w-3 h-3 text-accent" />
+              Ad Shield on — popups, redirects & new-tab ads blocked. If the player misbehaves, toggle shield off.
+            </>
+          ) : (
+            <>✨ Enjoy the movie night together! Don't forget to write about it in your journal ✨</>
+          )}
         </p>
       </div>
     </div>
