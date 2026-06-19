@@ -1,9 +1,17 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Ticket, BookHeart } from "lucide-react";
+import { ArrowLeft, Ticket, BookHeart, Shield, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toEmbedUrl, isDirectVideo, isExternalOnly } from "@/lib/embedUrl";
+import {
+  PLAYER_SANDBOX,
+  PLAYER_ALLOW,
+  getAdShieldEnabled,
+  setAdShieldEnabled,
+  installPopupGuard,
+} from "@/lib/adShield";
+import { useToast } from "@/hooks/use-toast";
 
 
 
@@ -15,6 +23,26 @@ export default function Watch() {
 
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
+  const [shield, setShield] = useState<boolean>(() => getAdShieldEnabled());
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!shield) return;
+    const cleanup = installPopupGuard();
+    return cleanup;
+  }, [shield]);
+
+  const toggleShield = () => {
+    const next = !shield;
+    setShield(next);
+    setAdShieldEnabled(next);
+    toast({
+      title: next ? "🛡️ Ad Shield is on" : "Shield paused",
+      description: next
+        ? "Popups, redirects & new-tab ads from the player are blocked."
+        : "If a player wasn't loading right, this turns the guard off.",
+    });
+  };
 
   const baseUrl = useMemo(() => toEmbedUrl(rawUrl), [rawUrl]);
 
@@ -51,6 +79,16 @@ export default function Watch() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleShield}
+            className={`gap-1 ${shield ? "text-accent hover:text-accent" : "text-primary-foreground/60"} hover:bg-primary-foreground/10`}
+            title={shield ? "Ad Shield is ON — popups & redirects blocked" : "Ad Shield is OFF"}
+          >
+            {shield ? <Shield className="w-3.5 h-3.5 fill-current" /> : <ShieldOff className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline text-xs">{shield ? "Shield" : "Shield off"}</span>
+          </Button>
           <Link to={`/tickets?movie=${encodeURIComponent(title)}`}>
             <Button variant="ticket" size="sm">
               <Ticket className="w-3 h-3 mr-1" />
@@ -132,13 +170,14 @@ export default function Watch() {
           />
         ) : (
           <iframe
-            key={currentUrl}
+            key={`${currentUrl}-${shield ? "s" : "ns"}`}
             src={currentUrl}
             title={`${title} S${season}E${episode}`}
             className="w-full h-full border-0"
             allowFullScreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            referrerPolicy="strict-origin-when-cross-origin"
+            allow={PLAYER_ALLOW}
+            referrerPolicy="no-referrer"
+            {...(shield ? { sandbox: PLAYER_SANDBOX } : {})}
           />
         )}
       </div>
@@ -146,8 +185,15 @@ export default function Watch() {
 
       {/* Bottom bar */}
       <div className="px-4 py-2 bg-card/10 backdrop-blur-sm border-t border-border/20 text-center">
-        <p className="text-xs text-primary-foreground/50 italic font-handwritten text-base">
-          ✨ Enjoy the movie night together! Don't forget to write about it in your journal ✨
+        <p className="text-xs text-primary-foreground/50 italic font-handwritten text-base flex items-center justify-center gap-2">
+          {shield ? (
+            <>
+              <Shield className="w-3 h-3 text-accent" />
+              Ad Shield on — popups, redirects & new-tab ads blocked. If the player misbehaves, toggle shield off.
+            </>
+          ) : (
+            <>✨ Enjoy the movie night together! Don't forget to write about it in your journal ✨</>
+          )}
         </p>
       </div>
     </div>
