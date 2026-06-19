@@ -82,5 +82,34 @@ export function useMovies() {
     return true;
   };
 
-  return { movies, loading, addMovie, deleteMovie, refetch: fetchMovies };
+  const updateMovie = async (
+    id: string,
+    updates: Partial<{
+      title: string;
+      genre: string;
+      year: string;
+      description: string | null;
+      poster: string | null;
+      watch_url: string | null;
+      embed_url: string | null;
+      rating: string | null;
+      total_seasons: number | null;
+    }>,
+  ) => {
+    const { data, error } = await supabase
+      .from("movies")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) {
+      toast({ title: "Couldn't save changes", description: error.message, variant: "destructive" });
+      return null;
+    }
+    setMovies((prev) => prev.map((m) => (m.id === id ? data : m)));
+    toast({ title: "✨ Saved!", description: "Movie details updated." });
+    return data;
+  };
+
+  return { movies, loading, addMovie, deleteMovie, updateMovie, refetch: fetchMovies };
 }
