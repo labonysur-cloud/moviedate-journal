@@ -507,35 +507,6 @@ export default function Movies() {
                           </AlertDialog>
                         </div>
                       )}
-                      {false && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button
-                              aria-label="Delete movie"
-                              className="absolute top-3 left-3 p-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-all"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete "{movie.title}"?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will remove the movie from the shared collection. This action can't be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                onClick={() => deleteMovie(movie.id)}
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
 
                       <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                         <span className="text-xs bg-accent/90 text-accent-foreground px-2 py-1 rounded-full font-medium">
