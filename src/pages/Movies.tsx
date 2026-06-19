@@ -51,7 +51,7 @@ interface Recommendation {
 }
 
 export default function Movies() {
-  const { movies, loading, addMovie, deleteMovie } = useMovies();
+  const { movies, loading, addMovie, deleteMovie, updateMovie } = useMovies();
   const { hasTicketForMovie } = useTickets();
   const { user } = useAuth();
   const { isAdmin } = useIsAdmin();
