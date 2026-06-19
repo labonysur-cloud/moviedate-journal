@@ -79,6 +79,16 @@ export default function Watch() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleShield}
+            className={`gap-1 ${shield ? "text-accent hover:text-accent" : "text-primary-foreground/60"} hover:bg-primary-foreground/10`}
+            title={shield ? "Ad Shield is ON — popups & redirects blocked" : "Ad Shield is OFF"}
+          >
+            {shield ? <Shield className="w-3.5 h-3.5 fill-current" /> : <ShieldOff className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline text-xs">{shield ? "Shield" : "Shield off"}</span>
+          </Button>
           <Link to={`/tickets?movie=${encodeURIComponent(title)}`}>
             <Button variant="ticket" size="sm">
               <Ticket className="w-3 h-3 mr-1" />
