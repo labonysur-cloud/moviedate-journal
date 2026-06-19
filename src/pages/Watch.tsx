@@ -23,6 +23,26 @@ export default function Watch() {
 
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
+  const [shield, setShield] = useState<boolean>(() => getAdShieldEnabled());
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!shield) return;
+    const cleanup = installPopupGuard();
+    return cleanup;
+  }, [shield]);
+
+  const toggleShield = () => {
+    const next = !shield;
+    setShield(next);
+    setAdShieldEnabled(next);
+    toast({
+      title: next ? "🛡️ Ad Shield is on" : "Shield paused",
+      description: next
+        ? "Popups, redirects & new-tab ads from the player are blocked."
+        : "If a player wasn't loading right, this turns the guard off.",
+    });
+  };
 
   const baseUrl = useMemo(() => toEmbedUrl(rawUrl), [rawUrl]);
 
