@@ -263,8 +263,10 @@ export default function WatchRoom() {
                 className="w-full h-full border-0"
                 allowFullScreen
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                referrerPolicy="strict-origin-when-cross-origin"
+                referrerPolicy="no-referrer"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock"
               />
+
             )
           ) : (
             <div className="flex items-center justify-center h-full text-primary-foreground/50">
