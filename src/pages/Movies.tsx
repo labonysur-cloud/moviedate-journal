@@ -64,6 +64,40 @@ export default function Movies() {
   const [recs, setRecs] = useState<Recommendation[]>([]);
   const [recsLoading, setRecsLoading] = useState(false);
   const [addingRec, setAddingRec] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Movie | null>(null);
+  const [editForm, setEditForm] = useState({ title: "", genre: "", year: "", description: "", poster: "", embedUrl: "", rating: "", totalSeasons: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEdit = (m: Movie) => {
+    setEditing(m);
+    setEditForm({
+      title: m.title || "",
+      genre: m.genre || "",
+      year: m.year || "",
+      description: m.description || "",
+      poster: m.poster || "",
+      embedUrl: m.embed_url || "",
+      rating: m.rating || "",
+      totalSeasons: m.total_seasons ? String(m.total_seasons) : "",
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editing) return;
+    setSavingEdit(true);
+    const ok = await updateMovie(editing.id, {
+      title: editForm.title,
+      genre: editForm.genre || "Movie",
+      year: editForm.year,
+      description: editForm.description || null,
+      poster: editForm.poster || null,
+      embed_url: editForm.embedUrl || null,
+      rating: editForm.rating || null,
+      total_seasons: editForm.totalSeasons ? parseInt(editForm.totalSeasons) : null,
+    });
+    setSavingEdit(false);
+    if (ok) setEditing(null);
+  };
   const navigate = useNavigate();
   const { toast } = useToast();
 
