@@ -371,6 +371,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_profiles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          display_name: string
+          is_blocked: boolean
+          user_id: string
+        }[]
+      }
       get_booked_seats: { Args: { p_movie_id: string }; Returns: string[] }
       get_room_invite_code: { Args: { _room_id: string }; Returns: string }
       has_role: {
