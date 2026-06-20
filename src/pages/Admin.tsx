@@ -87,6 +87,12 @@ export default function Admin() {
     p.display_name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const profileMap = new Map(profiles.map((p) => [p.user_id, p]));
+  const movieCountByUser = movies.reduce<Record<string, number>>((acc, m) => {
+    acc[m.added_by] = (acc[m.added_by] || 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div className="min-h-screen py-8 sm:py-12 px-4">
       <div className="container mx-auto max-w-5xl">
@@ -137,9 +143,14 @@ export default function Admin() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{p.display_name}</p>
-                    {p.is_blocked && (
-                      <span className="text-xs text-destructive font-handwritten">currently blocked</span>
-                    )}
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <span className="font-handwritten">
+                        {movieCountByUser[p.user_id] || 0} movie{(movieCountByUser[p.user_id] || 0) === 1 ? "" : "s"} added
+                      </span>
+                      {p.is_blocked && (
+                        <span className="text-destructive font-handwritten">· blocked</span>
+                      )}
+                    </div>
                   </div>
                   <Button
                     variant={p.is_blocked ? "warm" : "outline"}
@@ -170,57 +181,96 @@ export default function Admin() {
 
         {/* Movies */}
         <section className="bg-card rounded-2xl border-2 border-primary/10 p-4 sm:p-6">
-          <h2 className="font-display text-xl font-semibold mb-4 flex items-center gap-2">
-            <Film className="w-5 h-5 text-primary" /> Marquee Movies
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+              <Film className="w-5 h-5 text-primary" /> Marquee Movies
+            </h2>
+            <span className="text-xs text-muted-foreground font-handwritten">
+              {movies.length} on the marquee
+            </span>
+          </div>
           {moviesLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
               <Loader2 className="w-4 h-4 animate-spin" /> Loading movies…
             </div>
           ) : (
             <ul className="grid sm:grid-cols-2 gap-3">
-              {movies.map((m) => (
-                <li
-                  key={m.id}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/40"
-                >
-                  <img
-                    src={m.poster || "/placeholder.svg"}
-                    alt={m.title}
-                    className="w-12 h-16 object-cover rounded-md border border-primary/10"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{m.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {m.genre} · {m.year}
-                    </p>
-                  </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" aria-label="Delete movie">
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Remove "{m.title}"?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will delete the movie from the collection for everyone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          onClick={() => deleteMovie(m.id)}
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </li>
-              ))}
+              {movies.map((m) => {
+                const uploader = profileMap.get(m.added_by);
+                const when = m.created_at
+                  ? new Date(m.created_at).toLocaleString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })
+                  : "—";
+                return (
+                  <li
+                    key={m.id}
+                    className="flex items-center gap-3 p-3 rounded-xl border border-border bg-secondary/40"
+                  >
+                    <img
+                      src={m.poster || "/placeholder.svg"}
+                      alt={m.title}
+                      className="w-12 h-16 object-cover rounded-md border border-primary/10"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{m.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {m.genre} · {m.year}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <div className="w-4 h-4 rounded-full bg-secondary border border-primary/10 overflow-hidden flex items-center justify-center shrink-0">
+                          {uploader?.avatar_url ? (
+                            <img
+                              src={uploader.avatar_url}
+                              alt={uploader.display_name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-[8px] font-display text-primary">
+                              {uploader?.display_name?.[0]?.toUpperCase() || "?"}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-muted-foreground truncate">
+                          by{" "}
+                          <span className="font-medium text-foreground/80">
+                            {uploader?.display_name || "Unknown"}
+                          </span>{" "}
+                          · <span className="font-handwritten">{when}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" aria-label="Delete movie">
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove "{m.title}"?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will delete the movie from the collection for everyone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => deleteMovie(m.id)}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
