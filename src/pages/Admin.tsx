@@ -87,6 +87,12 @@ export default function Admin() {
     p.display_name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const profileMap = new Map(profiles.map((p) => [p.user_id, p]));
+  const movieCountByUser = movies.reduce<Record<string, number>>((acc, m) => {
+    acc[m.added_by] = (acc[m.added_by] || 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div className="min-h-screen py-8 sm:py-12 px-4">
       <div className="container mx-auto max-w-5xl">
