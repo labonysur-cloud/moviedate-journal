@@ -143,9 +143,14 @@ export default function Admin() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{p.display_name}</p>
-                    {p.is_blocked && (
-                      <span className="text-xs text-destructive font-handwritten">currently blocked</span>
-                    )}
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <span className="font-handwritten">
+                        {movieCountByUser[p.user_id] || 0} movie{(movieCountByUser[p.user_id] || 0) === 1 ? "" : "s"} added
+                      </span>
+                      {p.is_blocked && (
+                        <span className="text-destructive font-handwritten">· blocked</span>
+                      )}
+                    </div>
                   </div>
                   <Button
                     variant={p.is_blocked ? "warm" : "outline"}
