@@ -92,6 +92,48 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_posts: {
+        Row: {
+          allowed_user_ids: string[]
+          audience: string
+          content: string
+          created_at: string
+          id: string
+          is_hidden: boolean
+          media_urls: Json
+          mood: string | null
+          movie_title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allowed_user_ids?: string[]
+          audience?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_hidden?: boolean
+          media_urls?: Json
+          mood?: string | null
+          movie_title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allowed_user_ids?: string[]
+          audience?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_hidden?: boolean
+          media_urls?: Json
+          mood?: string | null
+          movie_title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       movies: {
         Row: {
           added_by: string
@@ -136,6 +178,73 @@ export type Database = {
           year?: string
         }
         Relationships: []
+      }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_hidden: boolean
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_hidden?: boolean
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_hidden?: boolean
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "journal_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "journal_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -304,6 +413,27 @@ export type Database = {
           },
         ]
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -381,8 +511,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      can_view_post: {
+        Args: { _post_id: string; _viewer: string }
+        Returns: boolean
+      }
       get_booked_seats: { Args: { p_movie_id: string }; Returns: string[] }
       get_room_invite_code: { Args: { _room_id: string }; Returns: string }
+      has_blocked: {
+        Args: { _blocked: string; _blocker: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
