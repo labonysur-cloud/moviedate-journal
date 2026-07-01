@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { CardGridSkeleton } from "@/components/PageSkeleton";
 import EmptyState from "@/components/EmptyState";
+import DownloadMovieButton from "@/components/DownloadMovieButton";
 
 
 function getMoviePoster(movie: Movie): string {
@@ -586,6 +587,17 @@ export default function Movies() {
                           </Button>
                         )}
                       </div>
+                      {hasTicket && (
+                        <div className="mt-2 flex justify-end">
+                          <DownloadMovieButton
+                            movieId={movie.id}
+                            title={movie.title}
+                            url={movie.watch_url || movie.embed_url}
+                            poster={movie.poster}
+                            compact
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>

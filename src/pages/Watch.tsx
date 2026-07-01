@@ -12,6 +12,8 @@ import {
   installPopupGuard,
 } from "@/lib/adShield";
 import { useToast } from "@/hooks/use-toast";
+import { listOfflineVideos, getOfflineBlobUrl } from "@/lib/offlineVideo";
+import { WifiOff, HardDrive } from "lucide-react";
 
 
 
@@ -49,6 +51,19 @@ export default function Watch() {
   const currentUrl = seasons > 0
     ? baseUrl.replace(/detailSe=\d+/, `detailSe=${season}`).replace(/detailEp=\d+/, `detailEp=${episode}`)
     : baseUrl;
+
+  // Offline playback: if this movie was saved to device, serve from cache.
+  const [offlineSrc, setOfflineSrc] = useState<string | null>(null);
+  useEffect(() => {
+    let revoked: string | null = null;
+    (async () => {
+      const match = listOfflineVideos().find((e) => e.url === rawUrl || e.url === currentUrl);
+      if (!match) { setOfflineSrc(null); return; }
+      const blobUrl = await getOfflineBlobUrl(match.movieId);
+      if (blobUrl) { setOfflineSrc(blobUrl); revoked = blobUrl; }
+    })();
+    return () => { if (revoked) URL.revokeObjectURL(revoked); };
+  }, [rawUrl, currentUrl]);
 
   if (!baseUrl) {
     return (
@@ -158,6 +173,20 @@ export default function Watch() {
               <Button variant="ticket" size="lg">Watch free on source platform</Button>
             </a>
             <p className="text-xs text-primary-foreground/40 break-all max-w-md">{currentUrl}</p>
+          </div>
+        ) : offlineSrc ? (
+          <div className="relative w-full h-full">
+            <video
+              key={offlineSrc}
+              src={offlineSrc}
+              controls
+              autoPlay
+              playsInline
+              className="w-full h-full bg-black"
+            />
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-xs text-primary-foreground/90">
+              <HardDrive className="w-3.5 h-3.5" /> Playing from your device
+            </div>
           </div>
         ) : isDirectVideo(currentUrl) ? (
           <video
