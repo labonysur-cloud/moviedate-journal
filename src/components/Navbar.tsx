@@ -11,6 +11,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 const links = [
   { to: "/", label: "Home", icon: Home },
   { to: "/movies", label: "Movies", icon: Film },
+  { to: "/favorites", label: "Favorites", icon: Heart },
   { to: "/tickets", label: "Tickets", icon: Ticket },
   { to: "/journal", label: "Journal", icon: BookHeart },
   { to: "/friends", label: "Friends", icon: Users },
