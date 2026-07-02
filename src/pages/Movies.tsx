@@ -27,6 +27,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { CardGridSkeleton } from "@/components/PageSkeleton";
 import EmptyState from "@/components/EmptyState";
 import DownloadMovieButton from "@/components/DownloadMovieButton";
+import MovieFavoriteButton from "@/components/MovieFavoriteButton";
 
 
 function getMoviePoster(movie: Movie): string {
@@ -509,10 +510,11 @@ export default function Movies() {
                         </div>
                       )}
 
-                      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+                      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
                         <span className="text-xs bg-accent/90 text-accent-foreground px-2 py-1 rounded-full font-medium">
                           {movie.genre}
                         </span>
+                        <MovieFavoriteButton movieId={movie.id} movieTitle={movie.title} />
                       </div>
                     </div>
                     <div className="p-3 sm:p-4">
