@@ -12,6 +12,7 @@ import Navbar from "@/components/Navbar";
 import Index from "./pages/Index";
 import Watch from "./pages/Watch";
 import Movies from "./pages/Movies";
+import Favorites from "./pages/Favorites";
 import Tickets from "./pages/Tickets";
 import Journal from "./pages/Journal";
 import Friends from "./pages/Friends";
@@ -40,6 +41,7 @@ function AnimatedRoutes() {
                 <Routes location={location} key={location.pathname}>
                   <Route path="/" element={<PageTransition><Index /></PageTransition>} />
                   <Route path="/movies" element={<PageTransition><Movies /></PageTransition>} />
+                  <Route path="/favorites" element={<PageTransition><Favorites /></PageTransition>} />
                   <Route path="/watch" element={<PageTransition><Watch /></PageTransition>} />
                   <Route path="/tickets" element={<PageTransition><Tickets /></PageTransition>} />
                   <Route path="/journal" element={<PageTransition><Journal /></PageTransition>} />
