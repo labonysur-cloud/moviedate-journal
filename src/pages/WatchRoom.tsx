@@ -287,7 +287,7 @@ export default function WatchRoom() {
               {/* Header with close */}
               <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between shrink-0">
                 <span className="text-[11px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Chat</span>
-                <button onClick={() => setChatOpen(false)} className="text-primary-foreground/40 hover:text-primary-foreground transition-colors">
+                <button onClick={() => setChatOpen(false)} aria-label="Close chat panel" className="text-primary-foreground/40 hover:text-primary-foreground transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
