@@ -65,6 +65,17 @@ export function toEmbedUrl(url: string): string {
   const ia = clean.match(/archive\.org\/(?:details|embed)\/([^/?#]+)/i);
   if (ia) return `https://archive.org/embed/${ia[1]}`;
 
+  // Ok.ru (odnoklassniki) — allows embedding
+  const ok = clean.match(/ok\.ru\/(?:video|videoembed)\/(\d+)/i);
+  if (ok) return `https://ok.ru/videoembed/${ok[1]}`;
+
+  // Streamable
+  const st = clean.match(/streamable\.com\/(?:e\/)?([a-z0-9]+)/i);
+  if (st) return `https://streamable.com/e/${st[1]}`;
+
+  // vidsrc / 2embed style multi-embed players (already embed-friendly)
+  if (/vidsrc\.|2embed\.|multiembed\.|vidcloud\./i.test(clean)) return clean;
+
   return clean;
 }
 
