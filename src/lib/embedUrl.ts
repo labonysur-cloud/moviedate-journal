@@ -85,7 +85,7 @@ export function isDirectVideo(url: string): boolean {
 
 // Platforms that block iframe embedding (X-Frame-Options) — must open in new tab.
 export function isExternalOnly(url: string): boolean {
-  return /(?:tubitv\.com|pluto\.tv|watch\.plex\.tv|amazon\.com|primevideo\.com|freevee)/i.test(url);
+  return /(?:tubitv\.com|pluto\.tv|watch\.plex\.tv|amazon\.com|primevideo\.com|freevee|moviebox\.|inmoviebox\.|cinefreak\.|mlwbd\.|mlsbd\.|hdhub4u\.|filmyzilla\.|9xmovies\.|bubbletv\.|katmoviehd\.|fmovies\.|movies4u\.|hdmovie|watchseries)/i.test(url);
 }
 
 // Identify which free source the link comes from (for status badges).
