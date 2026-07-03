@@ -371,6 +371,7 @@ export default function Movies() {
                     variant="warm"
                     onClick={handleSmartAutoFill}
                     disabled={autofilling || !linkInput.trim()}
+                    aria-label="Smart autofill movie details from link"
                   >
                     {autofilling ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
