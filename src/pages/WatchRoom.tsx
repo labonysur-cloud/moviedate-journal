@@ -413,6 +413,7 @@ export default function WatchRoom() {
                 <Button
                   size="icon"
                   variant="ghost"
+                  aria-label="Toggle emoji picker"
                   onClick={() => { setShowEmoji(!showEmoji); setShowGif(false); }}
                   className={`shrink-0 h-8 w-8 ${showEmoji ? "text-accent" : "text-primary-foreground/50"}`}
                 >
@@ -421,6 +422,7 @@ export default function WatchRoom() {
                 <Button
                   size="icon"
                   variant="ghost"
+                  aria-label="Toggle GIF picker"
                   onClick={() => { setShowGif(!showGif); setShowEmoji(false); }}
                   className={`shrink-0 h-8 w-8 ${showGif ? "text-accent" : "text-primary-foreground/50"}`}
                 >
@@ -433,7 +435,7 @@ export default function WatchRoom() {
                   placeholder="Say something..."
                   className="bg-primary-foreground/10 border-border/30 text-primary-foreground text-xs placeholder:text-primary-foreground/30"
                 />
-                <Button size="icon" variant="ghost" onClick={() => sendMessage()} className="text-accent shrink-0 h-8 w-8">
+                <Button size="icon" variant="ghost" aria-label="Send message" onClick={() => sendMessage()} className="text-accent shrink-0 h-8 w-8">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
