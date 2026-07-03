@@ -209,6 +209,7 @@ export default function Friends() {
                     className="text-muted-foreground hover:text-destructive h-8 w-8 p-0 shrink-0"
                     onClick={() => removeFriend(friend.id, friend.display_name)}
                     title="Remove friend"
+                    aria-label={`Remove ${friend.display_name || "friend"}`}
                   >
                     <UserMinus className="w-4 h-4" />
                   </Button>
