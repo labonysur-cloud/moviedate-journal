@@ -30,7 +30,7 @@ export function extractYouTubeId(url: string): { id: string; start?: number } | 
 }
 
 export function isTrustedPlayer(url: string): boolean {
-  return /(?:youtube\.com|youtu\.be|youtube-nocookie\.com|player\.vimeo\.com|vimeo\.com|dailymotion\.com|archive\.org)/i.test(url);
+  return /(?:youtube\.com|youtu\.be|youtube-nocookie\.com|player\.vimeo\.com|vimeo\.com|dailymotion\.com|archive\.org|ok\.ru|odnoklassniki\.ru|streamable\.com|mixdrop\.|dood\.|streamtape\.|filemoon\.|vidsrc\.|2embed\.|multiembed\.|vidcloud\.|upstream\.to|voe\.sx|streamwish\.)/i.test(url);
 }
 
 export function toEmbedUrl(url: string): string {
