@@ -10,8 +10,8 @@ interface SeoProps {
 }
 
 /**
- * Per-route <head> tags. Sets a unique title, meta description, canonical,
- * and og:*/twitter:* previews that self-reference the current route.
+ * Per-route head tags. Sets a unique title, meta description, canonical,
+ * and og / twitter previews that self-reference the current route.
  */
 export default function Seo({ title, description, path, type = "website" }: SeoProps) {
   const url = `${SITE}${path}`;
