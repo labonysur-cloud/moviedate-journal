@@ -81,10 +81,10 @@ export default function Friends() {
         {/* Share Link Section */}
         <div className="relative overflow-hidden rounded-[26px] border-2 border-border bg-card p-4 sm:p-6 mb-4 sm:mb-6 bg-gingham shadow-[0_16px_36px_-28px_hsl(var(--primary)/0.5)]">
           <div className="pointer-events-none absolute right-4 top-3 h-8 w-20 rotate-[5deg] rounded-sm bg-secondary/85 shadow-sm" />
-          <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <Link2 className="w-5 h-5 text-accent" />
             Invite Friends
-          </h3>
+          </h2>
           <p className="text-sm text-muted-foreground mb-4">
             Copy one pretty invite link and share it when you want a new movie buddy.
           </p>
@@ -109,10 +109,10 @@ export default function Friends() {
         {/* Add by Code */}
         <div className="relative overflow-hidden rounded-[26px] border-2 border-border bg-card p-4 sm:p-6 mb-4 sm:mb-6 shadow-[0_16px_36px_-28px_hsl(var(--accent)/0.45)]">
           <div className="pointer-events-none absolute left-5 top-3 h-8 w-16 -rotate-[6deg] rounded-sm bg-secondary/80 shadow-sm" />
-          <h3 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-accent" />
             Add by Code or Link
-          </h3>
+          </h2>
           <p className="mb-4 text-sm text-muted-foreground">Paste a code or full invite link and we will tuck them right into your friends list.</p>
           <div className="flex gap-2 flex-col sm:flex-row">
             <Input
@@ -136,10 +136,10 @@ export default function Friends() {
               exit={{ opacity: 0, height: 0 }}
               className="rounded-[26px] border-2 border-accent/35 bg-card p-4 sm:p-6 mb-4 sm:mb-6 shadow-[0_16px_36px_-28px_hsl(var(--accent)/0.45)]"
             >
-              <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Mail className="w-5 h-5 text-accent" />
                 Pending Requests ({pendingRequests.length})
-              </h3>
+              </h2>
               <div className="space-y-3">
                 {pendingRequests.map((req) => (
                   <div key={req.id} className="flex items-center justify-between p-3 rounded-[20px] bg-secondary/55 gap-2 border border-border/60">
@@ -173,10 +173,10 @@ export default function Friends() {
 
         {/* Friends List */}
         <div className="relative overflow-hidden rounded-[26px] border-2 border-border bg-card p-4 sm:p-6 bg-polka">
-          <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-primary" />
             My Friends ({friends.length})
-          </h3>
+          </h2>
           {friends.length === 0 ? (
             <div className="text-center py-8">
               <HeartSparkleIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -209,6 +209,7 @@ export default function Friends() {
                     className="text-muted-foreground hover:text-destructive h-8 w-8 p-0 shrink-0"
                     onClick={() => removeFriend(friend.id, friend.display_name)}
                     title="Remove friend"
+                    aria-label={`Remove ${friend.display_name || "friend"}`}
                   >
                     <UserMinus className="w-4 h-4" />
                   </Button>

@@ -287,7 +287,7 @@ export default function WatchRoom() {
               {/* Header with close */}
               <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between shrink-0">
                 <span className="text-[11px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Chat</span>
-                <button onClick={() => setChatOpen(false)} className="text-primary-foreground/40 hover:text-primary-foreground transition-colors">
+                <button onClick={() => setChatOpen(false)} aria-label="Close chat panel" className="text-primary-foreground/40 hover:text-primary-foreground transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -387,7 +387,7 @@ export default function WatchRoom() {
                         placeholder="Search GIFs..."
                         className="bg-primary-foreground/10 border-border/30 text-primary-foreground text-[10px] h-7 placeholder:text-primary-foreground/30"
                       />
-                      <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-primary-foreground/60" onClick={() => searchGifs(gifSearch)}>
+                      <Button size="icon" variant="ghost" aria-label="Search GIFs" className="h-7 w-7 shrink-0 text-primary-foreground/60" onClick={() => searchGifs(gifSearch)}>
                         <Search className="w-3 h-3" />
                       </Button>
                     </div>
@@ -413,6 +413,7 @@ export default function WatchRoom() {
                 <Button
                   size="icon"
                   variant="ghost"
+                  aria-label="Toggle emoji picker"
                   onClick={() => { setShowEmoji(!showEmoji); setShowGif(false); }}
                   className={`shrink-0 h-8 w-8 ${showEmoji ? "text-accent" : "text-primary-foreground/50"}`}
                 >
@@ -421,6 +422,7 @@ export default function WatchRoom() {
                 <Button
                   size="icon"
                   variant="ghost"
+                  aria-label="Toggle GIF picker"
                   onClick={() => { setShowGif(!showGif); setShowEmoji(false); }}
                   className={`shrink-0 h-8 w-8 ${showGif ? "text-accent" : "text-primary-foreground/50"}`}
                 >
@@ -433,7 +435,7 @@ export default function WatchRoom() {
                   placeholder="Say something..."
                   className="bg-primary-foreground/10 border-border/30 text-primary-foreground text-xs placeholder:text-primary-foreground/30"
                 />
-                <Button size="icon" variant="ghost" onClick={() => sendMessage()} className="text-accent shrink-0 h-8 w-8">
+                <Button size="icon" variant="ghost" aria-label="Send message" onClick={() => sendMessage()} className="text-accent shrink-0 h-8 w-8">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>

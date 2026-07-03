@@ -98,6 +98,9 @@ export default function Navbar() {
             size="icon"
             onClick={() => setMobileOpen(!mobileOpen)}
             className="h-9 w-9 rounded-full relative"
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileOpen}
+
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             {sharedTicketCount > 0 && !mobileOpen && (

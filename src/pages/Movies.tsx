@@ -289,10 +289,10 @@ export default function Movies() {
               className="overflow-hidden mb-8 sm:mb-10"
             >
               <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border">
-                <h3 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 mb-4">
+                <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 text-primary" />
                   What are you in the mood for?
-                </h3>
+                </h2>
                 <div className="flex flex-wrap gap-2 mb-6">
                   {moodOptions.map((mood) => (
                     <button
@@ -357,7 +357,7 @@ export default function Movies() {
               className="overflow-hidden mb-8 sm:mb-10"
             >
               <div className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-primary/10 max-w-lg mx-auto text-center">
-                <h3 className="font-display text-lg font-semibold text-foreground mb-1">Add a movie ♡</h3>
+                <h2 className="font-display text-lg font-semibold text-foreground mb-1">Add a movie ♡</h2>
                 <p className="text-sm text-muted-foreground mb-4">Paste a link or type a title — AI will figure out the rest!</p>
                 <div className="flex gap-2">
                   <Input
@@ -371,6 +371,7 @@ export default function Movies() {
                     variant="warm"
                     onClick={handleSmartAutoFill}
                     disabled={autofilling || !linkInput.trim()}
+                    aria-label="Smart autofill movie details from link"
                   >
                     {autofilling ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -401,8 +402,8 @@ export default function Movies() {
             >
               <div className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-primary/10 space-y-4 max-w-lg">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-display text-lg font-semibold text-foreground">Movie details</h3>
-                  <Button variant="ghost" size="icon" onClick={() => { setShowForm(false); setForm({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" }); }}>
+                  <h2 className="font-display text-lg font-semibold text-foreground">Movie details</h2>
+                  <Button variant="ghost" size="icon" aria-label="Close movie form" onClick={() => { setShowForm(false); setForm({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" }); }}>
                     <X className="w-4 h-4" />
                   </Button>
                 </div>

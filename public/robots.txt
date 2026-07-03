@@ -12,3 +12,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /watch
+Disallow: /watch-together
+Disallow: /reset-password
+
+Sitemap: https://moviedate-journal.lovable.app/sitemap.xml
