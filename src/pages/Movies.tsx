@@ -292,7 +292,7 @@ export default function Movies() {
                 <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 text-primary" />
                   What are you in the mood for?
-                </h3>
+                </h2>
                 <div className="flex flex-wrap gap-2 mb-6">
                   {moodOptions.map((mood) => (
                     <button
