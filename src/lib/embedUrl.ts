@@ -103,6 +103,15 @@ export function getSourcePlatform(url: string): { key: string; label: string } |
   if (/archive\.org/.test(u)) return { key: "archive", label: "Internet Archive" };
   if (/vimeo\.com/.test(u)) return { key: "vimeo", label: "Vimeo" };
   if (/dailymotion\.com/.test(u)) return { key: "dailymotion", label: "Dailymotion" };
+  if (/ok\.ru|odnoklassniki/.test(u)) return { key: "okru", label: "OK.ru" };
+  if (/streamable\.com/.test(u)) return { key: "streamable", label: "Streamable" };
+  if (/moviebox\.|inmoviebox\./.test(u)) return { key: "moviebox", label: "MovieBox" };
+  if (/cinefreak\./.test(u)) return { key: "cinefreak", label: "Cinefreak" };
+  if (/mlwbd\.|mlsbd\./.test(u)) return { key: "mlwbd", label: "MLWBD" };
+  if (/bubbletv\./.test(u)) return { key: "bubbletv", label: "Bubble TV" };
+  if (/hdhub4u\.|filmyzilla\.|9xmovies\.|katmoviehd\./.test(u)) return { key: "hdhub", label: "HD Mirror" };
+  if (/vidsrc\.|2embed\.|multiembed\.|vidcloud\./.test(u)) return { key: "vidsrc", label: "Multi-source Player" };
+  if (/fmovies\./.test(u)) return { key: "fmovies", label: "FMovies" };
   if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url)) return { key: "direct", label: "Direct video" };
   return { key: "other", label: "External" };
 }
