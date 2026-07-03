@@ -126,6 +126,15 @@ export default function Watch() {
           <Button
             variant="ghost"
             size="sm"
+            onClick={toggleDesktop}
+            className={`gap-1 ${desktopMode ? "text-accent hover:text-accent" : "text-primary-foreground/60"} hover:bg-primary-foreground/10`}
+            title={desktopMode ? "Desktop mode ON — site pretends to be desktop" : "Request desktop site"}
+          >
+            <span className="text-xs">{desktopMode ? "Desktop" : "Mobile"}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={toggleShield}
             className={`gap-1 ${shield ? "text-accent hover:text-accent" : "text-primary-foreground/60"} hover:bg-primary-foreground/10`}
             title={shield ? "Ad Shield is ON — popups & redirects blocked" : "Ad Shield is OFF"}
@@ -133,6 +142,7 @@ export default function Watch() {
             {shield ? <Shield className="w-3.5 h-3.5 fill-current" /> : <ShieldOff className="w-3.5 h-3.5" />}
             <span className="hidden sm:inline text-xs">{shield ? "Shield" : "Shield off"}</span>
           </Button>
+
           <Link to={`/tickets?movie=${encodeURIComponent(title)}`}>
             <Button variant="ticket" size="sm">
               <Ticket className="w-3 h-3 mr-1" />
