@@ -245,8 +245,9 @@ export default function Watch() {
             allowFullScreen
             allow={PLAYER_ALLOW}
             referrerPolicy="no-referrer"
-            {...(shield ? { sandbox: PLAYER_SANDBOX } : {})}
+            {...(shield && !isTrustedPlayer(currentUrl) ? { sandbox: PLAYER_SANDBOX } : {})}
           />
+
         )}
       </div>
 
