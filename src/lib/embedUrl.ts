@@ -29,25 +29,31 @@ export function extractYouTubeId(url: string): { id: string; start?: number } | 
   return null;
 }
 
+export function isTrustedPlayer(url: string): boolean {
+  return /(?:youtube\.com|youtu\.be|youtube-nocookie\.com|player\.vimeo\.com|vimeo\.com|dailymotion\.com|archive\.org)/i.test(url);
+}
+
 export function toEmbedUrl(url: string): string {
   const clean = ensureHttp(url);
   if (!clean) return "";
 
   const yt = extractYouTubeId(clean);
   if (yt) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
     const params = new URLSearchParams({
       rel: "0",
       modestbranding: "1",
       playsinline: "1",
-      iv_load_policy: "3", // hide video annotations
+      iv_load_policy: "3",
       fs: "1",
-      disablekb: "0",
+      enablejsapi: "1",
       color: "white",
     });
+    if (origin) params.set("origin", origin);
     if (yt.start) params.set("start", String(yt.start));
-    // youtube-nocookie reduces tracking & some ad targeting
     return `https://www.youtube-nocookie.com/embed/${yt.id}?${params.toString()}`;
   }
+
 
   const vimeo = clean.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
   if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
