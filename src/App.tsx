@@ -42,7 +42,7 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/auth" element={<><Seo {...SEO.auth} path="/auth" /><PageTransition><Auth /></PageTransition></>} />
         <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
         <Route
           path="/*"
@@ -51,14 +51,14 @@ function AnimatedRoutes() {
               <Navbar />
               <AnimatePresence mode="wait">
                 <Routes location={location} key={location.pathname}>
-                  <Route path="/" element={<PageTransition><Index /></PageTransition>} />
-                  <Route path="/movies" element={<PageTransition><Movies /></PageTransition>} />
-                  <Route path="/favorites" element={<PageTransition><Favorites /></PageTransition>} />
+                  <Route path="/" element={<><Seo {...SEO.home} path="/" /><PageTransition><Index /></PageTransition></>} />
+                  <Route path="/movies" element={<><Seo {...SEO.movies} path="/movies" /><PageTransition><Movies /></PageTransition></>} />
+                  <Route path="/favorites" element={<><Seo {...SEO.favorites} path="/favorites" /><PageTransition><Favorites /></PageTransition></>} />
                   <Route path="/watch" element={<PageTransition><Watch /></PageTransition>} />
-                  <Route path="/tickets" element={<PageTransition><Tickets /></PageTransition>} />
-                  <Route path="/journal" element={<PageTransition><Journal /></PageTransition>} />
-                  <Route path="/friends" element={<PageTransition><Friends /></PageTransition>} />
-                  <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+                  <Route path="/tickets" element={<><Seo {...SEO.tickets} path="/tickets" /><PageTransition><Tickets /></PageTransition></>} />
+                  <Route path="/journal" element={<><Seo {...SEO.journal} path="/journal" /><PageTransition><Journal /></PageTransition></>} />
+                  <Route path="/friends" element={<><Seo {...SEO.friends} path="/friends" /><PageTransition><Friends /></PageTransition></>} />
+                  <Route path="/profile" element={<><Seo {...SEO.profile} path="/profile" /><PageTransition><Profile /></PageTransition></>} />
                   <Route path="/watch-together" element={<PageTransition><WatchRoom /></PageTransition>} />
                   <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
                   <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
