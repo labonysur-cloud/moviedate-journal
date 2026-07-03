@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Ticket, BookHeart, Shield, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toEmbedUrl, isDirectVideo, isExternalOnly } from "@/lib/embedUrl";
+import { toEmbedUrl, isDirectVideo, isExternalOnly, isTrustedPlayer } from "@/lib/embedUrl";
 import {
   PLAYER_SANDBOX,
   PLAYER_ALLOW,
@@ -26,6 +26,10 @@ export default function Watch() {
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
   const [shield, setShield] = useState<boolean>(() => getAdShieldEnabled());
+  const [desktopMode, setDesktopMode] = useState<boolean>(() => {
+    if (typeof localStorage === "undefined") return false;
+    return localStorage.getItem("cozy-cinema:desktop-mode") === "1";
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,6 +37,31 @@ export default function Watch() {
     const cleanup = installPopupGuard();
     return cleanup;
   }, [shield]);
+
+  // "Request desktop site" — override viewport so mobile-gated players
+  // (that redirect phones to "get the app") render their desktop web player.
+  useEffect(() => {
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+    if (!meta) return;
+    const original = meta.getAttribute("content") || "width=device-width, initial-scale=1.0";
+    if (desktopMode) {
+      meta.setAttribute("content", "width=1280, initial-scale=0.35, user-scalable=yes");
+    }
+    return () => meta.setAttribute("content", original);
+  }, [desktopMode]);
+
+  const toggleDesktop = () => {
+    const next = !desktopMode;
+    setDesktopMode(next);
+    try { localStorage.setItem("cozy-cinema:desktop-mode", next ? "1" : "0"); } catch {}
+    toast({
+      title: next ? "Desktop mode on" : "Mobile mode",
+      description: next
+        ? "The site now identifies as desktop — helps for players that push you to install an app on phone."
+        : "Back to normal mobile layout.",
+    });
+  };
+
 
   const toggleShield = () => {
     const next = !shield;
@@ -97,6 +126,15 @@ export default function Watch() {
           <Button
             variant="ghost"
             size="sm"
+            onClick={toggleDesktop}
+            className={`gap-1 ${desktopMode ? "text-accent hover:text-accent" : "text-primary-foreground/60"} hover:bg-primary-foreground/10`}
+            title={desktopMode ? "Desktop mode ON — site pretends to be desktop" : "Request desktop site"}
+          >
+            <span className="text-xs">{desktopMode ? "Desktop" : "Mobile"}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={toggleShield}
             className={`gap-1 ${shield ? "text-accent hover:text-accent" : "text-primary-foreground/60"} hover:bg-primary-foreground/10`}
             title={shield ? "Ad Shield is ON — popups & redirects blocked" : "Ad Shield is OFF"}
@@ -104,6 +142,7 @@ export default function Watch() {
             {shield ? <Shield className="w-3.5 h-3.5 fill-current" /> : <ShieldOff className="w-3.5 h-3.5" />}
             <span className="hidden sm:inline text-xs">{shield ? "Shield" : "Shield off"}</span>
           </Button>
+
           <Link to={`/tickets?movie=${encodeURIComponent(title)}`}>
             <Button variant="ticket" size="sm">
               <Ticket className="w-3 h-3 mr-1" />
@@ -206,8 +245,9 @@ export default function Watch() {
             allowFullScreen
             allow={PLAYER_ALLOW}
             referrerPolicy="no-referrer"
-            {...(shield ? { sandbox: PLAYER_SANDBOX } : {})}
+            {...(shield && !isTrustedPlayer(currentUrl) ? { sandbox: PLAYER_SANDBOX } : {})}
           />
+
         )}
       </div>
 
