@@ -289,7 +289,7 @@ export default function Movies() {
               className="overflow-hidden mb-8 sm:mb-10"
             >
               <div className="bg-card rounded-2xl p-4 sm:p-6 border border-border">
-                <h3 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 mb-4">
+                <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 text-primary" />
                   What are you in the mood for?
                 </h3>
@@ -357,7 +357,7 @@ export default function Movies() {
               className="overflow-hidden mb-8 sm:mb-10"
             >
               <div className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-primary/10 max-w-lg mx-auto text-center">
-                <h3 className="font-display text-lg font-semibold text-foreground mb-1">Add a movie ♡</h3>
+                <h2 className="font-display text-lg font-semibold text-foreground mb-1">Add a movie ♡</h2>
                 <p className="text-sm text-muted-foreground mb-4">Paste a link or type a title — AI will figure out the rest!</p>
                 <div className="flex gap-2">
                   <Input
