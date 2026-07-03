@@ -234,10 +234,10 @@ export default function Tickets() {
               className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-dashed border-primary/40 mb-8 sm:mb-10 shadow-sm relative"
             >
               <span className="absolute -top-3 left-6 bg-gold text-gold-foreground font-handwritten text-sm px-3 py-0.5 rounded-full rotate-[-3deg] shadow">step one</span>
-              <h3 className="font-display text-xl font-semibold italic text-foreground mb-4 flex items-center gap-2">
+              <h2 className="font-display text-xl font-semibold italic text-foreground mb-4 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-accent" />
                 Choose your movie
-              </h3>
+              </h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {movies.map((movie) => (
                   <button
@@ -284,10 +284,10 @@ export default function Tickets() {
               className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-dashed border-primary/40 mb-8 sm:mb-10 shadow-sm relative"
             >
               <span className="absolute -top-3 left-6 bg-gold text-gold-foreground font-handwritten text-sm px-3 py-0.5 rounded-full rotate-[-3deg] shadow">step two</span>
-              <h3 className="font-display text-xl font-semibold italic text-foreground mb-1 flex items-center gap-2">
+              <h2 className="font-display text-xl font-semibold italic text-foreground mb-1 flex items-center gap-2">
                 <PopcornIcon className="w-5 h-5" />
                 Pick your seats
-              </h3>
+              </h2>
               <p className="text-sm text-muted-foreground mb-4 sm:mb-6 font-handwritten text-base">
                 watching <span className="font-semibold text-foreground">{selectedMovie?.title}</span>
                 <span className="ml-2 text-xs text-accent">(you can grab a few!)</span>
