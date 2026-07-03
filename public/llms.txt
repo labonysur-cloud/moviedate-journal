@@ -1,0 +1,19 @@
+# Cozy Cinema
+
+> A cozy space for friends to share movie nights, book digital tickets, keep a shared movie journal, and watch together in real time.
+
+Cozy Cinema is a warm, scrapbook-styled web app for movie lovers. Friends can add movies from free sources, save favorites, book keepsake tickets, journal about what they watched, and jump into shared watch rooms.
+
+## Pages
+
+- [Home](/): Landing page introducing Cozy Cinema.
+- [Movies](/movies): Browse and add movies from free sources with AI-assisted metadata.
+- [Favorites](/favorites): Your personal collection of favorite movies.
+- [Tickets](/tickets): Digital keepsake tickets for booked movie nights.
+- [Journal](/journal): A social feed to share reviews, clips, and reactions with friends.
+- [Friends](/friends): Find friends and manage your movie-night circle.
+- [Sign in](/auth): Create an account or sign in to Cozy Cinema.
+
+## Optional
+
+- [Profile](/profile): Your account details, avatar, and movies you added.
