@@ -22,6 +22,18 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import Seo from "@/components/Seo";
+
+const SEO = {
+  home: { title: "Cozy Cinema — Watch Together, Feel Together", description: "A cozy space for friends to share movie nights, book keepsake tickets, and journal beautiful memories together." },
+  movies: { title: "Movies — Cozy Cinema", description: "Browse and add movies from free sources with AI-assisted metadata and free-link discovery." },
+  favorites: { title: "My Favorites — Cozy Cinema", description: "The movies you've hearted, all in one cozy scrapbook shelf." },
+  tickets: { title: "Tickets — Cozy Cinema", description: "Digital keepsake tickets for your movie nights — share, download, and start watch rooms with friends." },
+  journal: { title: "Journal — Cozy Cinema", description: "A warm social feed for movie reviews, short clips, and reactions with your friends." },
+  friends: { title: "Friends — Cozy Cinema", description: "Find friends, accept requests, and build your movie-night circle on Cozy Cinema." },
+  profile: { title: "Profile — Cozy Cinema", description: "Your Cozy Cinema profile: avatar, display name, and the movies you've added." },
+  auth: { title: "Sign in — Cozy Cinema", description: "Sign in or create a Cozy Cinema account to save tickets, journals, and favorites." },
+};
 
 const queryClient = new QueryClient();
 
