@@ -387,7 +387,7 @@ export default function WatchRoom() {
                         placeholder="Search GIFs..."
                         className="bg-primary-foreground/10 border-border/30 text-primary-foreground text-[10px] h-7 placeholder:text-primary-foreground/30"
                       />
-                      <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-primary-foreground/60" onClick={() => searchGifs(gifSearch)}>
+                      <Button size="icon" variant="ghost" aria-label="Search GIFs" className="h-7 w-7 shrink-0 text-primary-foreground/60" onClick={() => searchGifs(gifSearch)}>
                         <Search className="w-3 h-3" />
                       </Button>
                     </div>
