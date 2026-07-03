@@ -91,6 +91,13 @@ serve(async (req) => {
 
     // 2) Free legal streaming platforms
     const platforms: Array<{ name: string; pattern: RegExp; query: string }> = [
+      { name: "moviebox", pattern: /moviebox\.[a-z.]+\/(movies?|detail|watch)\//i, query: `${base} site:moviebox.ng OR site:inmoviebox.com` },
+      { name: "cinefreak", pattern: /cinefreak\.[a-z.]+\//i, query: `${base} site:cinefreak.net` },
+      { name: "mlwbd", pattern: /(mlwbd|mlsbd)\.[a-z.]+\//i, query: `${base} site:mlwbd.rest OR site:mlsbd.dad` },
+      { name: "bubbletv", pattern: /bubbletv\.[a-z.]+\//i, query: `${base} site:bubbletv.co` },
+      { name: "hdhub4u", pattern: /hdhub4u\.[a-z.]+\//i, query: `${base} site:hdhub4u.com` },
+      { name: "vidsrc", pattern: /vidsrc\.[a-z.]+\/(embed|movie)\//i, query: `${base} site:vidsrc.to OR site:vidsrc.me` },
+      { name: "2embed", pattern: /2embed\.[a-z.]+\/(embed|movie)\//i, query: `${base} site:2embed.cc` },
       { name: "tubi", pattern: /tubitv\.com\/(movies|tv-shows)\//i, query: `${base} site:tubitv.com` },
       { name: "freevee", pattern: /amazon\.com\/.*(freevee|gp\/video)/i, query: `${base} watch free Amazon Freevee` },
       { name: "pluto", pattern: /pluto\.tv\/.*\/(movies|on-demand)\//i, query: `${base} site:pluto.tv` },

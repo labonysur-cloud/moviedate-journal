@@ -30,7 +30,7 @@ export function extractYouTubeId(url: string): { id: string; start?: number } | 
 }
 
 export function isTrustedPlayer(url: string): boolean {
-  return /(?:youtube\.com|youtu\.be|youtube-nocookie\.com|player\.vimeo\.com|vimeo\.com|dailymotion\.com|archive\.org)/i.test(url);
+  return /(?:youtube\.com|youtu\.be|youtube-nocookie\.com|player\.vimeo\.com|vimeo\.com|dailymotion\.com|archive\.org|ok\.ru|odnoklassniki\.ru|streamable\.com|mixdrop\.|dood\.|streamtape\.|filemoon\.|vidsrc\.|2embed\.|multiembed\.|vidcloud\.|upstream\.to|voe\.sx|streamwish\.)/i.test(url);
 }
 
 export function toEmbedUrl(url: string): string {
@@ -65,6 +65,17 @@ export function toEmbedUrl(url: string): string {
   const ia = clean.match(/archive\.org\/(?:details|embed)\/([^/?#]+)/i);
   if (ia) return `https://archive.org/embed/${ia[1]}`;
 
+  // Ok.ru (odnoklassniki) — allows embedding
+  const ok = clean.match(/ok\.ru\/(?:video|videoembed)\/(\d+)/i);
+  if (ok) return `https://ok.ru/videoembed/${ok[1]}`;
+
+  // Streamable
+  const st = clean.match(/streamable\.com\/(?:e\/)?([a-z0-9]+)/i);
+  if (st) return `https://streamable.com/e/${st[1]}`;
+
+  // vidsrc / 2embed style multi-embed players (already embed-friendly)
+  if (/vidsrc\.|2embed\.|multiembed\.|vidcloud\./i.test(clean)) return clean;
+
   return clean;
 }
 
@@ -74,7 +85,7 @@ export function isDirectVideo(url: string): boolean {
 
 // Platforms that block iframe embedding (X-Frame-Options) — must open in new tab.
 export function isExternalOnly(url: string): boolean {
-  return /(?:tubitv\.com|pluto\.tv|watch\.plex\.tv|amazon\.com|primevideo\.com|freevee)/i.test(url);
+  return /(?:tubitv\.com|pluto\.tv|watch\.plex\.tv|amazon\.com|primevideo\.com|freevee|moviebox\.|inmoviebox\.|cinefreak\.|mlwbd\.|mlsbd\.|hdhub4u\.|filmyzilla\.|9xmovies\.|bubbletv\.|katmoviehd\.|fmovies\.|movies4u\.|hdmovie|watchseries)/i.test(url);
 }
 
 // Identify which free source the link comes from (for status badges).
@@ -92,6 +103,15 @@ export function getSourcePlatform(url: string): { key: string; label: string } |
   if (/archive\.org/.test(u)) return { key: "archive", label: "Internet Archive" };
   if (/vimeo\.com/.test(u)) return { key: "vimeo", label: "Vimeo" };
   if (/dailymotion\.com/.test(u)) return { key: "dailymotion", label: "Dailymotion" };
+  if (/ok\.ru|odnoklassniki/.test(u)) return { key: "okru", label: "OK.ru" };
+  if (/streamable\.com/.test(u)) return { key: "streamable", label: "Streamable" };
+  if (/moviebox\.|inmoviebox\./.test(u)) return { key: "moviebox", label: "MovieBox" };
+  if (/cinefreak\./.test(u)) return { key: "cinefreak", label: "Cinefreak" };
+  if (/mlwbd\.|mlsbd\./.test(u)) return { key: "mlwbd", label: "MLWBD" };
+  if (/bubbletv\./.test(u)) return { key: "bubbletv", label: "Bubble TV" };
+  if (/hdhub4u\.|filmyzilla\.|9xmovies\.|katmoviehd\./.test(u)) return { key: "hdhub", label: "HD Mirror" };
+  if (/vidsrc\.|2embed\.|multiembed\.|vidcloud\./.test(u)) return { key: "vidsrc", label: "Multi-source Player" };
+  if (/fmovies\./.test(u)) return { key: "fmovies", label: "FMovies" };
   if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url)) return { key: "direct", label: "Direct video" };
   return { key: "other", label: "External" };
 }
