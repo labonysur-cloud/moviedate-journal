@@ -26,6 +26,10 @@ export default function Watch() {
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
   const [shield, setShield] = useState<boolean>(() => getAdShieldEnabled());
+  const [desktopMode, setDesktopMode] = useState<boolean>(() => {
+    if (typeof localStorage === "undefined") return false;
+    return localStorage.getItem("cozy-cinema:desktop-mode") === "1";
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,6 +37,31 @@ export default function Watch() {
     const cleanup = installPopupGuard();
     return cleanup;
   }, [shield]);
+
+  // "Request desktop site" — override viewport so mobile-gated players
+  // (that redirect phones to "get the app") render their desktop web player.
+  useEffect(() => {
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+    if (!meta) return;
+    const original = meta.getAttribute("content") || "width=device-width, initial-scale=1.0";
+    if (desktopMode) {
+      meta.setAttribute("content", "width=1280, initial-scale=0.35, user-scalable=yes");
+    }
+    return () => meta.setAttribute("content", original);
+  }, [desktopMode]);
+
+  const toggleDesktop = () => {
+    const next = !desktopMode;
+    setDesktopMode(next);
+    try { localStorage.setItem("cozy-cinema:desktop-mode", next ? "1" : "0"); } catch {}
+    toast({
+      title: next ? "Desktop mode on" : "Mobile mode",
+      description: next
+        ? "The site now identifies as desktop — helps for players that push you to install an app on phone."
+        : "Back to normal mobile layout.",
+    });
+  };
+
 
   const toggleShield = () => {
     const next = !shield;
