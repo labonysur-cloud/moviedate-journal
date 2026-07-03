@@ -402,8 +402,8 @@ export default function Movies() {
             >
               <div className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-primary/10 space-y-4 max-w-lg">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-display text-lg font-semibold text-foreground">Movie details</h3>
-                  <Button variant="ghost" size="icon" onClick={() => { setShowForm(false); setForm({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" }); }}>
+                  <h2 className="font-display text-lg font-semibold text-foreground">Movie details</h2>
+                  <Button variant="ghost" size="icon" aria-label="Close movie form" onClick={() => { setShowForm(false); setForm({ title: "", genre: "", year: "", description: "", poster: "", watchUrl: "", embedUrl: "", rating: "", totalSeasons: "" }); }}>
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
