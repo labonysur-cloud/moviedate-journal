@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Journal media readable by signed-in users" ON storage.objects;
