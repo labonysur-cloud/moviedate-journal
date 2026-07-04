@@ -8,7 +8,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { toEmbedUrl, isDirectVideo } from "@/lib/embedUrl";
+import { toEmbedUrl, isDirectVideo, isTrustedPlayer, shouldUseDesktopPlayerProxy } from "@/lib/embedUrl";
+import DesktopPlayerFrame from "@/components/DesktopPlayerFrame";
+import { PLAYER_ALLOW, PLAYER_SANDBOX } from "@/lib/adShield";
 
 interface RoomMessage {
   id: string;
@@ -52,6 +54,9 @@ export default function WatchRoom() {
   const [gifLoading, setGifLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [profiles, setProfiles] = useState<Record<string, { display_name: string; avatar_url: string | null }>>({});
+  const [proxiedHtml, setProxiedHtml] = useState<string | null>(null);
+  const [proxiedBlobUrl, setProxiedBlobUrl] = useState<string | null>(null);
+  const [proxyLoading, setProxyLoading] = useState(false);
 
   // Join via invite code
   useEffect(() => {
@@ -196,13 +201,52 @@ export default function WatchRoom() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const embedUrl = room?.embed_url;
+  const currentUrl = embedUrl ? toEmbedUrl(embedUrl) : "";
+
+  useEffect(() => {
+    if (!proxiedHtml) {
+      setProxiedBlobUrl(null);
+      return;
+    }
+
+    const blobUrl = URL.createObjectURL(new Blob([proxiedHtml], { type: "text/html" }));
+    setProxiedBlobUrl(blobUrl);
+    return () => URL.revokeObjectURL(blobUrl);
+  }, [proxiedHtml]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setProxiedHtml(null);
+
+    if (!currentUrl || isDirectVideo(currentUrl) || !shouldUseDesktopPlayerProxy(currentUrl)) {
+      setProxyLoading(false);
+      return;
+    }
+
+    setProxyLoading(true);
+    supabase.functions.invoke("player-proxy", { body: { url: currentUrl } })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || data?.error || !data?.html) throw new Error(data?.error || error?.message || "Desktop player could not load");
+        setProxiedHtml(data.html);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setProxiedHtml(null);
+          toast.error(error.message || "Desktop player could not load");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setProxyLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [currentUrl]);
 
   if (loading || !room) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading room...</div>;
   }
-
-  const embedUrl = room.embed_url;
-  const currentUrl = embedUrl ? toEmbedUrl(embedUrl) : "";
 
   return (
     <div className="min-h-screen bg-foreground/95 flex flex-col">
@@ -255,18 +299,25 @@ export default function WatchRoom() {
                 playsInline
                 className="w-full h-full bg-black"
               />
+            ) : proxyLoading ? (
+              <div className="flex h-full items-center justify-center text-primary-foreground/60">
+                Loading desktop player...
+              </div>
+            ) : proxiedBlobUrl ? (
+              <DesktopPlayerFrame
+                src={proxiedBlobUrl}
+                title={room.movie_title}
+                desktopMode
+                allow={PLAYER_ALLOW}
+              />
             ) : (
-              <iframe
-                key={currentUrl}
+              <DesktopPlayerFrame
                 src={currentUrl}
                 title={room.movie_title}
-                className="w-full h-full border-0"
-                allowFullScreen
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                referrerPolicy="no-referrer"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock"
+                desktopMode
+                allow={PLAYER_ALLOW}
+                sandbox={!isTrustedPlayer(currentUrl) ? PLAYER_SANDBOX : undefined}
               />
-
             )
           ) : (
             <div className="flex items-center justify-center h-full text-primary-foreground/50">
