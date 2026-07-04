@@ -94,7 +94,7 @@ function injectDesktopEnvironment(html: string, finalUrl: URL) {
 
   const baseTag = `<base href="${getBaseHref(finalUrl)}">`;
   let out = removeKnownAdScripts(html);
-  out = out.replace(/(["'=\(,])\/\/([a-z0-9.-]+\.[a-z]{2,}[^"'\s<)]*)/gi, "$1https://$2");
+  out = out.replace(/([:"'=\(,])\/\/([^"'\s<)]*)/g, "$1https://$2");
   out = out.replace(/(["'|])Ù:\/\/([£-ʯ.]+)/g, "$1https://$2");
   out = out.replace(/<meta\b[^>]*name=["']viewport["'][^>]*>/i, '<meta name="viewport" content="width=1280, initial-scale=1">');
 
