@@ -48,6 +48,9 @@ export function setAdShieldEnabled(on: boolean) {
 export const PLAYER_SANDBOX =
   "allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock";
 
+export const PROXIED_PLAYER_SANDBOX =
+  "allow-scripts allow-forms allow-presentation allow-orientation-lock";
+
 /**
  * Hardened iframe `allow` policy — denies camera/mic/geolocation/payment
  * which some ad networks probe.

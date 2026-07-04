@@ -3,7 +3,8 @@ import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Ticket, BookHeart, Shield, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toEmbedUrl, isDirectVideo, isExternalOnly, isTrustedPlayer } from "@/lib/embedUrl";
+import { toEmbedUrl, isDirectVideo, isExternalOnly, isTrustedPlayer, shouldUseDesktopPlayerProxy } from "@/lib/embedUrl";
+import DesktopPlayerFrame from "@/components/DesktopPlayerFrame";
 import {
   PLAYER_SANDBOX,
   PLAYER_ALLOW,
@@ -12,6 +13,7 @@ import {
   installPopupGuard,
 } from "@/lib/adShield";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { listOfflineVideos, getOfflineBlobUrl } from "@/lib/offlineVideo";
 import { WifiOff, HardDrive } from "lucide-react";
 
@@ -27,10 +29,14 @@ export default function Watch() {
   const [episode, setEpisode] = useState(1);
   const [shield, setShield] = useState<boolean>(() => getAdShieldEnabled());
   const [desktopMode, setDesktopMode] = useState<boolean>(() => {
-    if (typeof localStorage === "undefined") return false;
-    return localStorage.getItem("cozy-cinema:desktop-mode") === "1";
+    if (typeof localStorage === "undefined") return true;
+    const saved = localStorage.getItem("cozy-cinema:desktop-mode");
+    return saved === null ? true : saved === "1";
   });
   const { toast } = useToast();
+  const [proxiedHtml, setProxiedHtml] = useState<string | null>(null);
+  const [proxiedBlobUrl, setProxiedBlobUrl] = useState<string | null>(null);
+  const [proxyLoading, setProxyLoading] = useState(false);
 
   useEffect(() => {
     if (!shield) return;
@@ -38,8 +44,8 @@ export default function Watch() {
     return cleanup;
   }, [shield]);
 
-  // "Request desktop site" — override viewport so mobile-gated players
-  // (that redirect phones to "get the app") render their desktop web player.
+  // Default to a desktop-sized player on every device so sources that push
+  // phones to install an app render their desktop web player instead.
   useEffect(() => {
     const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
     if (!meta) return;
@@ -57,7 +63,7 @@ export default function Watch() {
     toast({
       title: next ? "Desktop mode on" : "Mobile mode",
       description: next
-        ? "The site now identifies as desktop — helps for players that push you to install an app on phone."
+        ? "Desktop-sized player enabled for sources that push phones to install an app."
         : "Back to normal mobile layout.",
     });
   };
@@ -80,6 +86,46 @@ export default function Watch() {
   const currentUrl = seasons > 0
     ? baseUrl.replace(/detailSe=\d+/, `detailSe=${season}`).replace(/detailEp=\d+/, `detailEp=${episode}`)
     : baseUrl;
+
+  useEffect(() => {
+    if (!proxiedHtml) {
+      setProxiedBlobUrl(null);
+      return;
+    }
+
+    const blobUrl = URL.createObjectURL(new Blob([proxiedHtml], { type: "text/html" }));
+    setProxiedBlobUrl(blobUrl);
+    return () => URL.revokeObjectURL(blobUrl);
+  }, [proxiedHtml]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setProxiedHtml(null);
+
+    if (!currentUrl || isDirectVideo(currentUrl) || isExternalOnly(currentUrl) || !shouldUseDesktopPlayerProxy(currentUrl)) {
+      setProxyLoading(false);
+      return;
+    }
+
+    setProxyLoading(true);
+    supabase.functions.invoke("player-proxy", { body: { url: currentUrl } })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || data?.error || !data?.html) throw new Error(data?.error || error?.message || "Desktop player could not load");
+        setProxiedHtml(data.html);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setProxiedHtml(null);
+          toast({ title: "Desktop player fallback", description: error.message, variant: "destructive" });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setProxyLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [currentUrl, toast]);
 
   // Offline playback: if this movie was saved to device, serve from cache.
   const [offlineSrc, setOfflineSrc] = useState<string | null>(null);
@@ -236,18 +282,25 @@ export default function Watch() {
             playsInline
             className="w-full h-full bg-black"
           />
+        ) : proxyLoading ? (
+          <div className="flex h-full w-full items-center justify-center text-sm text-primary-foreground/70">
+            Loading desktop player...
+          </div>
+        ) : proxiedBlobUrl ? (
+          <DesktopPlayerFrame
+            src={proxiedBlobUrl}
+            title={`${title} S${season}E${episode}`}
+            desktopMode={desktopMode}
+            allow={PLAYER_ALLOW}
+          />
         ) : (
-          <iframe
-            key={`${currentUrl}-${shield ? "s" : "ns"}`}
+          <DesktopPlayerFrame
             src={currentUrl}
             title={`${title} S${season}E${episode}`}
-            className="w-full h-full border-0"
-            allowFullScreen
+            desktopMode={desktopMode}
             allow={PLAYER_ALLOW}
-            referrerPolicy="no-referrer"
-            {...(shield && !isTrustedPlayer(currentUrl) ? { sandbox: PLAYER_SANDBOX } : {})}
+            sandbox={shield && !isTrustedPlayer(currentUrl) ? PLAYER_SANDBOX : undefined}
           />
-
         )}
       </div>
 

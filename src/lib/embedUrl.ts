@@ -30,7 +30,7 @@ export function extractYouTubeId(url: string): { id: string; start?: number } | 
 }
 
 export function isTrustedPlayer(url: string): boolean {
-  return /(?:youtube\.com|youtu\.be|youtube-nocookie\.com|player\.vimeo\.com|vimeo\.com|dailymotion\.com|archive\.org|ok\.ru|odnoklassniki\.ru|streamable\.com|mixdrop\.|dood\.|streamtape\.|filemoon\.|vidsrc\.|2embed\.|multiembed\.|vidcloud\.|upstream\.to|voe\.sx|streamwish\.)/i.test(url);
+  return /(?:youtube\.com|youtu\.be|youtube-nocookie\.com|player\.vimeo\.com|vimeo\.com|dailymotion\.com|archive\.org|ok\.ru|odnoklassniki\.ru|streamable\.com|mixdrop\.|dood\.|streamtape\.|filemoon\.|vidsrc\.|2embed\.|multiembed\.|vidcloud\.|cinecloud\.|cloudnestra\.|upstream\.to|voe\.sx|streamwish\.)/i.test(url);
 }
 
 export function toEmbedUrl(url: string): string {
@@ -83,9 +83,16 @@ export function isDirectVideo(url: string): boolean {
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
 }
 
-// Platforms that block iframe embedding (X-Frame-Options) — must open in new tab.
+// Platforms that consistently block iframe embedding (X-Frame-Options) — must open in new tab.
+// Mirror/player hosts such as MovieBox, Cinefreak, MLWBD, CineCloud, etc. are deliberately
+// NOT listed here, because opening them externally on phones triggers their install-app pages.
+// The watch page instead embeds them inside a desktop-sized iframe.
 export function isExternalOnly(url: string): boolean {
-  return /(?:tubitv\.com|pluto\.tv|watch\.plex\.tv|amazon\.com|primevideo\.com|freevee|moviebox\.|inmoviebox\.|cinefreak\.|mlwbd\.|mlsbd\.|hdhub4u\.|filmyzilla\.|9xmovies\.|bubbletv\.|katmoviehd\.|fmovies\.|movies4u\.|hdmovie|watchseries)/i.test(url);
+  return /(?:tubitv\.com|pluto\.tv|watch\.plex\.tv|amazon\.com|primevideo\.com|freevee)/i.test(url);
+}
+
+export function shouldUseDesktopPlayerProxy(url: string): boolean {
+  return /(?:cinecloud\.|cloudnestra\.|yagaverse\.net|netfilm\.world|themoviebox\.|movibox\.|moviebox\.|inmoviebox\.|cinefreak\.|mlwbd\.|mlsbd\.|bubbletv\.|hdhub4u\.|vidsrc\.|2embed\.|multiembed\.|vidcloud\.)/i.test(url);
 }
 
 // Identify which free source the link comes from (for status badges).
