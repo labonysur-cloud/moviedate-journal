@@ -91,14 +91,14 @@ function getPlayerCleanupInjection(finalUrl: URL) {
 
   const isAdLike = (el) => {
     if (!el || el.nodeType !== 1) return false;
-    const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const text = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
     const marker = [el.id, el.className, el.getAttribute?.('aria-label'), el.getAttribute?.('data-ad')].join(' ').toLowerCase();
     const style = window.getComputedStyle(el);
     const z = Number(style.zIndex) || 0;
     const fixedOverlay = (style.position === 'fixed' || style.position === 'sticky') && z >= 8 && isVisibleBox(el);
-    if (/explore what's happening|global conversations|fresh perspectives|advertisement|sponsored|\bad\b/.test(text) && isVisibleBox(el)) return true;
-    if (/(^|[-_\s])(ad|ads|advert|interstitial|popup|banner)([-_\s]|$)/.test(marker) && isVisibleBox(el)) return true;
-    if (fixedOverlay && /\bad\b|advertisement|sponsored|install app|download app/.test(text)) return true;
+    if (/explore what's happening|global conversations|fresh perspectives|advertisement|sponsored|\\bad\\b/.test(text) && isVisibleBox(el)) return true;
+    if (/(^|[-_\\s])(ad|ads|advert|interstitial|popup|banner)([-_\\s]|$)/.test(marker) && isVisibleBox(el)) return true;
+    if (fixedOverlay && /\\bad\\b|advertisement|sponsored|install app|download app/.test(text)) return true;
     return false;
   };
 
@@ -132,7 +132,7 @@ function getPlayerCleanupInjection(finalUrl: URL) {
   const clickWatchOnlineOnce = () => {
     if (!isMovieBox || window.__cozyClickedWatchOnline) return;
     const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], div, span'));
-    const watch = candidates.find((el) => /^\s*watch online\s*$/i.test(el.innerText || el.textContent || ''));
+    const watch = candidates.find((el) => /^\\s*watch online\\s*$/i.test(el.innerText || el.textContent || ''));
     if (watch) {
       window.__cozyClickedWatchOnline = true;
       try { watch.click(); } catch (_) {}
