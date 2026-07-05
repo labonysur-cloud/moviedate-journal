@@ -43,6 +43,122 @@ function removeKnownAdScripts(html: string) {
     .replace(/<script\b[^>]*>\s*\(function\(s\)\{s\.dataset\.zone[\s\S]*?<\/script>/gi, "");
 }
 
+function getPlayerCleanupInjection(finalUrl: URL) {
+  const isMovieBox = /(?:^|\.)moviebox\.|(?:^|\.)themoviebox\.|(?:^|\.)movibox\.|(?:^|\.)inmoviebox\./i.test(finalUrl.hostname);
+
+  const cleanupCss = `
+<style id="cozy-player-cleanup">
+  html, body { min-width: 1280px !important; background: #050505 !important; }
+  .h5-page, .mobile-page, [class*="mobile-download" i], [class*="download-card" i], [class*="downloadapp" i],
+  [href*="/downloadApp"], [href*="downloadApp"], [class*="ThirdPartyAd" i], [class*="AdsCard" i],
+  [class*="interstitial" i], [class*="ad-card" i], [class*="adcard" i], [class*="ad_banner" i],
+  [id*="google_ads" i], [id*="ad_iframe" i], [data-ad], ins.adsbygoogle,
+  iframe[src*="googlesyndication"], iframe[src*="doubleclick"], iframe[src*="adservice"], iframe[src*="traffic"],
+  script[src*="googlesyndication"], script[src*="doubleclick"] {
+    display: none !important; visibility: hidden !important; pointer-events: none !important;
+  }
+  .pc-page { display: block !important; }
+  video { max-width: 100% !important; }
+</style>`;
+
+  const cleanupScript = `
+<script>
+(() => {
+  const isMovieBox = ${JSON.stringify(isMovieBox)};
+  const blockedUrl = /(?:googlesyndication|doubleclick|google-analytics|googletagmanager|firebase|adservice|trafficstars|tsyndicate|evadav|ad\/get-config|\/app\/get-latest-app-pkgs)/i;
+  const originalFetch = window.fetch ? window.fetch.bind(window) : null;
+  if (originalFetch) {
+    window.fetch = (input, init) => {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      if (blockedUrl.test(String(url))) {
+        return Promise.resolve(new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      }
+      return originalFetch(input, init);
+    };
+  }
+
+  const originalOpen = window.open;
+  window.open = (url, target, features) => {
+    if (/downloadApp|apk|adservice|doubleclick|googlesyndication|traffic|tsyndicate|evadav/i.test(String(url || ''))) return null;
+    return originalOpen ? originalOpen.call(window, url, target, features) : null;
+  };
+
+  const isVisibleBox = (el) => {
+    const rect = el.getBoundingClientRect?.();
+    if (!rect) return false;
+    return rect.width > 180 && rect.height > 120;
+  };
+
+  const isAdLike = (el) => {
+    if (!el || el.nodeType !== 1) return false;
+    const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const marker = [el.id, el.className, el.getAttribute?.('aria-label'), el.getAttribute?.('data-ad')].join(' ').toLowerCase();
+    const style = window.getComputedStyle(el);
+    const z = Number(style.zIndex) || 0;
+    const fixedOverlay = (style.position === 'fixed' || style.position === 'sticky') && z >= 8 && isVisibleBox(el);
+    if (/explore what's happening|global conversations|fresh perspectives|advertisement|sponsored|\bad\b/.test(text) && isVisibleBox(el)) return true;
+    if (/(^|[-_\s])(ad|ads|advert|interstitial|popup|banner)([-_\s]|$)/.test(marker) && isVisibleBox(el)) return true;
+    if (fixedOverlay && /\bad\b|advertisement|sponsored|install app|download app/.test(text)) return true;
+    return false;
+  };
+
+  const cleanupAds = () => {
+    document.querySelectorAll('iframe, ins, [id], [class], [data-ad]').forEach((el) => {
+      try { if (isAdLike(el)) el.remove(); } catch (_) {}
+    });
+
+    document.querySelectorAll('button, [role="button"], img, svg, div, span').forEach((el) => {
+      try {
+        const label = [el.getAttribute?.('aria-label'), el.getAttribute?.('alt'), el.innerText, el.textContent].join(' ').toLowerCase();
+        if (!/(close|×|✕|skip|dismiss)/i.test(label)) return;
+        const parent = el.closest?.('[id], [class], div');
+        if (parent && isAdLike(parent)) el.click?.();
+      } catch (_) {}
+    });
+  };
+
+  const blockAppRedirects = (event) => {
+    const target = event.target?.closest?.('a, button, [role="button"], div, span');
+    if (!target) return;
+    const href = target.getAttribute?.('href') || '';
+    const text = (target.innerText || target.textContent || '').trim();
+    if (/downloadApp|apk|watch in app|download app|moviebox app/i.test(href + ' ' + text)) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+  document.addEventListener('click', blockAppRedirects, true);
+
+  const clickWatchOnlineOnce = () => {
+    if (!isMovieBox || window.__cozyClickedWatchOnline) return;
+    const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], div, span'));
+    const watch = candidates.find((el) => /^\s*watch online\s*$/i.test(el.innerText || el.textContent || ''));
+    if (watch) {
+      window.__cozyClickedWatchOnline = true;
+      try { watch.click(); } catch (_) {}
+    }
+  };
+
+  const install = () => {
+    cleanupAds();
+    if (isMovieBox) {
+      document.documentElement.classList.add('pc-html');
+      document.querySelectorAll('.h5-page, .h5-detail-resource, .h5-footer').forEach((el) => el.remove());
+      setTimeout(clickWatchOnlineOnce, 900);
+      setTimeout(clickWatchOnlineOnce, 2500);
+    }
+  };
+
+  install();
+  const observer = new MutationObserver(install);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  setInterval(install, 1500);
+})();
+</script>`;
+
+  return `${cleanupCss}${cleanupScript}`;
+}
+
 function injectDesktopEnvironment(html: string, finalUrl: URL) {
   const desktopScript = `
 <script>
@@ -98,11 +214,13 @@ function injectDesktopEnvironment(html: string, finalUrl: URL) {
   out = out.replace(/(["'|])Ù:\/\/([£-ʯ.]+)/g, "$1https://$2");
   out = out.replace(/<meta\b[^>]*name=["']viewport["'][^>]*>/i, '<meta name="viewport" content="width=1280, initial-scale=1">');
 
+  const cleanupInjection = getPlayerCleanupInjection(finalUrl);
+
   if (/<head[^>]*>/i.test(out)) {
-    return out.replace(/<head([^>]*)>/i, `<head$1>${baseTag}${desktopScript}`);
+    return out.replace(/<head([^>]*)>/i, `<head$1>${baseTag}${desktopScript}${cleanupInjection}`);
   }
 
-  return `<!doctype html><html><head>${baseTag}${desktopScript}</head><body>${out}</body></html>`;
+  return `<!doctype html><html><head>${baseTag}${desktopScript}${cleanupInjection}</head><body>${out}</body></html>`;
 }
 
 async function fetchDesktopHtml(url: URL) {

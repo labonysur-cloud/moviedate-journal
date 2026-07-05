@@ -84,6 +84,20 @@ export default function Navbar() {
 
         {/* Mobile actions */}
         <div className="flex md:hidden items-center gap-1">
+          <Link to="/favorites" aria-label="Open My Favorites">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-9 w-9 rounded-full",
+                location.pathname === "/favorites"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <Heart className={cn("h-4 w-4", location.pathname === "/favorites" && "fill-current")} />
+            </Button>
+          </Link>
           <Button
             variant="ghost"
             size="icon"

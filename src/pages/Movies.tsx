@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useMovies, type Movie } from "@/hooks/useMovies";
 import { useTickets } from "@/hooks/useTickets";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ClapperboardIcon } from "@/components/icons/CinemaIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +32,10 @@ import MovieFavoriteButton from "@/components/MovieFavoriteButton";
 
 function getMoviePoster(movie: Movie): string {
   return movie.poster || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop";
+}
+
+function MovieFavoriteButtonIcon() {
+  return <Star className="w-4 h-4 mr-1 text-primary fill-primary" />;
 }
 
 const moodOptions = [
@@ -272,6 +276,12 @@ export default function Movies() {
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">The collection we're building together 🍿</p>
           </div>
           <div className="flex gap-2">
+            <Link to="/favorites">
+              <Button variant="outline" size="sm">
+                <MovieFavoriteButtonIcon />
+                My Favorites
+              </Button>
+            </Link>
             <Button variant="outline" size="sm" onClick={() => { setShowRecs(!showRecs); setShowForm(false); }}>
               <Sparkles className="w-4 h-4 mr-1" />
               {showRecs ? "Hide" : "AI Suggest"}
