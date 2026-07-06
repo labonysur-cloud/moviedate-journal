@@ -210,7 +210,10 @@ function injectDesktopEnvironment(html: string, finalUrl: URL) {
 
   const baseTag = `<base href="${getBaseHref(finalUrl)}">`;
   let out = removeKnownAdScripts(html);
-  out = out.replace(/([:"'=\(,])\/\/([^"'\s<)]*)/g, "$1https://$2");
+  // Convert protocol-relative HTML asset attributes (`src="//cdn..."`) only.
+  // Do not rewrite every `//` in the document: Nuxt/React scripts contain regex
+  // literals and comments where global rewriting creates syntax errors.
+  out = out.replace(/(\b(?:src|href|poster|content)=['"])\/\/([^"'\s>]+)/gi, "$1https://$2");
   out = out.replace(/(["'|])Ù:\/\/([£-ʯ.]+)/g, "$1https://$2");
   out = out.replace(/<meta\b[^>]*name=["']viewport["'][^>]*>/i, '<meta name="viewport" content="width=1280, initial-scale=1">');
 
@@ -221,6 +224,44 @@ function injectDesktopEnvironment(html: string, finalUrl: URL) {
   }
 
   return `<!doctype html><html><head>${baseTag}${desktopScript}${cleanupInjection}</head><body>${out}</body></html>`;
+}
+
+function getMovieBoxInfo(url: URL) {
+  if (!/(?:^|\.)(?:themoviebox|movibox|moviebox|inmoviebox)\./i.test(url.hostname)) return null;
+  const subjectId = url.searchParams.get("id");
+  const detailPath = url.pathname.split("/").filter(Boolean).pop() || "";
+  if (!subjectId || !detailPath) return null;
+  const se = url.searchParams.get("detailSe") || "1";
+  const ep = url.searchParams.get("detailEp") || "1";
+  return { subjectId, detailPath, se, ep };
+}
+
+async function resolveMovieBoxStream(url: URL) {
+  const info = getMovieBoxInfo(url);
+  if (!info) return null;
+
+  const api = new URL("/wefeed-h5api-bff/subject/play", url.origin);
+  api.searchParams.set("subjectId", info.subjectId);
+  api.searchParams.set("se", info.se);
+  api.searchParams.set("ep", info.ep);
+  api.searchParams.set("detailPath", info.detailPath);
+  api.searchParams.set("streamSignType", "1");
+
+  const res = await fetch(api, {
+    headers: {
+      "User-Agent": DESKTOP_UA,
+      "Accept": "application/json,text/plain,*/*",
+      "Referer": url.toString(),
+    },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const streams = Array.isArray(data?.data?.streams) ? data.data.streams : [];
+  const playable = streams
+    .filter((stream: { url?: string; vipLocked?: boolean }) => stream?.url && !stream.vipLocked)
+    .sort((a: { resolutions?: string }, b: { resolutions?: string }) => Number(b.resolutions || 0) - Number(a.resolutions || 0));
+  const streamUrl = playable[0]?.url;
+  return typeof streamUrl === "string" ? streamUrl : null;
 }
 
 async function fetchDesktopHtml(url: URL) {
@@ -247,6 +288,14 @@ serve(async (req) => {
       ? { url: requestUrl.searchParams.get("url") }
       : await req.json();
     const requestedUrl = assertSafeUrl(String(url || ""));
+
+    if (requestUrl.searchParams.get("resolve") === "stream") {
+      const streamUrl = await resolveMovieBoxStream(requestedUrl);
+      return new Response(JSON.stringify({ streamUrl }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     let { html, finalUrl } = await fetchDesktopHtml(requestedUrl);
 
     const nested = extractNestedPlayer(html, finalUrl);
