@@ -14,6 +14,7 @@ import {
   installPopupGuard,
 } from "@/lib/adShield";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { listOfflineVideos, getOfflineBlobUrl } from "@/lib/offlineVideo";
 import { WifiOff, HardDrive } from "lucide-react";
 
@@ -35,6 +36,8 @@ export default function Watch() {
   });
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const [proxiedHtml, setProxiedHtml] = useState<string | null>(null);
+  const [proxyLoading, setProxyLoading] = useState(false);
 
   useEffect(() => {
     if (!shield) return;
@@ -73,12 +76,35 @@ export default function Watch() {
     ? baseUrl.replace(/detailSe=\d+/, `detailSe=${season}`).replace(/detailEp=\d+/, `detailEp=${episode}`)
     : baseUrl;
 
-  const proxiedPlayerUrl = useMemo(() => {
-    if (!isMobile || !desktopMode || !currentUrl || isDirectVideo(currentUrl) || isExternalOnly(currentUrl) || !shouldUseDesktopPlayerProxy(currentUrl)) {
-      return "";
-    }
-    return `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/player-proxy?url=${encodeURIComponent(currentUrl)}`;
+  const shouldProxyForMobile = useMemo(() => {
+    return Boolean(isMobile && desktopMode && currentUrl && !isDirectVideo(currentUrl) && !isExternalOnly(currentUrl) && shouldUseDesktopPlayerProxy(currentUrl));
   }, [currentUrl, desktopMode, isMobile]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setProxiedHtml(null);
+
+    if (!shouldProxyForMobile) {
+      setProxyLoading(false);
+      return;
+    }
+
+    setProxyLoading(true);
+    supabase.functions.invoke("player-proxy", { body: { url: currentUrl } })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || data?.error || !data?.html) throw new Error(data?.error || error?.message || "Desktop player could not load");
+        setProxiedHtml(data.html);
+      })
+      .catch((error) => {
+        if (!cancelled) toast({ title: "Mobile desktop player failed", description: error.message, variant: "destructive" });
+      })
+      .finally(() => {
+        if (!cancelled) setProxyLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [currentUrl, shouldProxyForMobile, toast]);
 
   // Offline playback: if this movie was saved to device, serve from cache.
   const [offlineSrc, setOfflineSrc] = useState<string | null>(null);
@@ -235,9 +261,13 @@ export default function Watch() {
             playsInline
             className="w-full h-full bg-black"
           />
-        ) : proxiedPlayerUrl ? (
+        ) : proxyLoading ? (
+          <div className="flex h-full w-full items-center justify-center text-sm text-primary-foreground/70">
+            Loading desktop player...
+          </div>
+        ) : proxiedHtml ? (
           <DesktopPlayerFrame
-            src={proxiedPlayerUrl}
+            srcDoc={proxiedHtml}
             title={`${title} S${season}E${episode}`}
             desktopMode={desktopMode}
             allow={PLAYER_ALLOW}
