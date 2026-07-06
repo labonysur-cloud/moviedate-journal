@@ -37,6 +37,7 @@ export default function Watch() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [proxiedHtml, setProxiedHtml] = useState<string | null>(null);
+  const [proxiedDataUrl, setProxiedDataUrl] = useState<string | null>(null);
   const [proxyLoading, setProxyLoading] = useState(false);
 
   useEffect(() => {
@@ -83,6 +84,7 @@ export default function Watch() {
   useEffect(() => {
     let cancelled = false;
     setProxiedHtml(null);
+    setProxiedDataUrl(null);
 
     if (!shouldProxyForMobile) {
       setProxyLoading(false);
@@ -105,6 +107,16 @@ export default function Watch() {
 
     return () => { cancelled = true; };
   }, [currentUrl, shouldProxyForMobile, toast]);
+
+  useEffect(() => {
+    if (!proxiedHtml) {
+      setProxiedDataUrl(null);
+      return;
+    }
+
+    const encoded = btoa(unescape(encodeURIComponent(proxiedHtml)));
+    setProxiedDataUrl(`data:text/html;charset=utf-8;base64,${encoded}`);
+  }, [proxiedHtml]);
 
   // Offline playback: if this movie was saved to device, serve from cache.
   const [offlineSrc, setOfflineSrc] = useState<string | null>(null);
@@ -265,9 +277,9 @@ export default function Watch() {
           <div className="flex h-full w-full items-center justify-center text-sm text-primary-foreground/70">
             Loading desktop player...
           </div>
-        ) : proxiedHtml ? (
+        ) : proxiedDataUrl ? (
           <DesktopPlayerFrame
-            srcDoc={proxiedHtml}
+            src={proxiedDataUrl}
             title={`${title} S${season}E${episode}`}
             desktopMode={desktopMode}
             allow={PLAYER_ALLOW}
