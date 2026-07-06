@@ -38,6 +38,7 @@ export default function Watch() {
   const isMobile = useIsMobile();
   const [proxiedHtml, setProxiedHtml] = useState<string | null>(null);
   const [proxiedDataUrl, setProxiedDataUrl] = useState<string | null>(null);
+  const [mobileStreamUrl, setMobileStreamUrl] = useState<string | null>(null);
   const [proxyLoading, setProxyLoading] = useState(false);
 
   useEffect(() => {
@@ -85,6 +86,7 @@ export default function Watch() {
     let cancelled = false;
     setProxiedHtml(null);
     setProxiedDataUrl(null);
+    setMobileStreamUrl(null);
 
     if (!shouldProxyForMobile) {
       setProxyLoading(false);
@@ -92,11 +94,26 @@ export default function Watch() {
     }
 
     setProxyLoading(true);
-    supabase.functions.invoke("player-proxy", { body: { url: currentUrl } })
-      .then(({ data, error }) => {
+    const streamEndpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/player-proxy?resolve=stream&url=${encodeURIComponent(currentUrl)}`;
+    fetch(streamEndpoint, {
+      headers: {
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+    })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
         if (cancelled) return;
-        if (error || data?.error || !data?.html) throw new Error(data?.error || error?.message || "Desktop player could not load");
-        setProxiedHtml(data.html);
+        if (data?.streamUrl) {
+          setMobileStreamUrl(data.streamUrl);
+          return;
+        }
+        return supabase.functions.invoke("player-proxy", { body: { url: currentUrl } })
+          .then(({ data, error }) => {
+            if (cancelled) return;
+            if (error || data?.error || !data?.html) throw new Error(data?.error || error?.message || "Desktop player could not load");
+            setProxiedHtml(data.html);
+          });
       })
       .catch((error) => {
         if (!cancelled) toast({ title: "Mobile desktop player failed", description: error.message, variant: "destructive" });
@@ -268,6 +285,15 @@ export default function Watch() {
           <video
             key={currentUrl}
             src={currentUrl}
+            controls
+            autoPlay
+            playsInline
+            className="w-full h-full bg-black"
+          />
+        ) : mobileStreamUrl ? (
+          <video
+            key={mobileStreamUrl}
+            src={mobileStreamUrl}
             controls
             autoPlay
             playsInline
