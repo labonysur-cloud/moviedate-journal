@@ -210,7 +210,11 @@ function injectDesktopEnvironment(html: string, finalUrl: URL) {
 
   const baseTag = `<base href="${getBaseHref(finalUrl)}">`;
   let out = removeKnownAdScripts(html);
-  out = out.replace(/([:"'=\(,])\/\/([^"'\s<)]*)/g, "$1https://$2");
+  // Convert protocol-relative assets (`//cdn...`) without corrupting normal
+  // absolute URLs (`https://cdn...`). Including `:` here breaks desktop pages by
+  // turning `https://...` into `https:https://...`, which the browser resolves
+  // as a bad relative path.
+  out = out.replace(/(["'=\(,])\/\/([^"'\s<)]*)/g, "$1https://$2");
   out = out.replace(/(["'|])Ù:\/\/([£-ʯ.]+)/g, "$1https://$2");
   out = out.replace(/<meta\b[^>]*name=["']viewport["'][^>]*>/i, '<meta name="viewport" content="width=1280, initial-scale=1">');
 

@@ -6,6 +6,33 @@ export function ensureHttp(url: string): string {
   return `https://${trimmed}`;
 }
 
+function normalizeMovieBoxUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!/(?:^|\.)(?:themoviebox|movibox|moviebox|inmoviebox)\./i.test(parsed.hostname)) return url;
+    if (parsed.pathname !== "/movies" || !parsed.search) return url;
+
+    const rawSearch = parsed.search.slice(1);
+    const decodedSearch = decodeURIComponent(rawSearch);
+    const marker = decodedSearch.indexOf("?");
+    if (marker <= 0) return url;
+
+    const slug = decodedSearch.slice(0, marker).replace(/^\/+|\/+$/g, "");
+    if (!slug) return url;
+
+    const params = new URLSearchParams(decodedSearch.slice(marker + 1));
+    if (params.get("type") === "2") params.set("type", "/movie/detail");
+    if (!params.has("detailSe")) params.set("detailSe", "");
+    if (!params.has("detailEp")) params.set("detailEp", "");
+    if (!params.has("lang")) params.set("lang", "en");
+    params.delete("movie");
+
+    return `${parsed.origin}/movies/${slug}?${params.toString()}`;
+  } catch {
+    return url;
+  }
+}
+
 export function extractYouTubeId(url: string): { id: string; start?: number } | null {
   const patterns = [
     /(?:youtu\.be\/)([\w-]{11})/i,
@@ -34,7 +61,7 @@ export function isTrustedPlayer(url: string): boolean {
 }
 
 export function toEmbedUrl(url: string): string {
-  const clean = ensureHttp(url);
+  const clean = normalizeMovieBoxUrl(ensureHttp(url));
   if (!clean) return "";
 
   const yt = extractYouTubeId(clean);
